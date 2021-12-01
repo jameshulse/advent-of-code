@@ -1,28 +1,48 @@
-use itertools::Itertools;
 use std::fs;
 
 fn main() {
-    // let depths: Vec<u32> = vec![199, 200, 208, 210, 200, 207, 240, 269, 260, 263];
-
-    let lines = fs::read_to_string("input.txt").expect("Couldn't read input file.");
-    let depths: Vec<u32> = lines
-        .split("\n")
+    let text = fs::read_to_string("input.txt").expect("Couldn't read input file.");
+    let depths: Vec<u32> = text
+        .lines()
         .map(|val| val.parse::<u32>().expect("Invalid value in input file!"))
         .collect();
 
-    let depth_triplets: Vec<u32> = depths
-        .into_iter()
-        .tuple_windows::<(_, _, _)>()
-        .map(|t| t.0 + t.1 + t.2)
-        .collect();
+    let step_one_increases = step_one(&depths);
+    let step_two_increases = step_two(&depths);
 
-    let mut increases = 0;
+    println!("Step One: {:?}", step_one_increases);
+    println!("Step two: {:?}", step_two_increases);
+}
 
-    for i in 1..depth_triplets.len() {
-        if depth_triplets[i] > depth_triplets[i - 1] {
-            increases += 1;
-        }
+fn step_one(depths: &Vec<u32>) -> usize {
+    depths.windows(2).filter(|w| w[0] < w[1]).count()
+}
+
+fn step_two(depths: &Vec<u32>) -> usize {
+    depths
+        .windows(3)
+        .map(|w| w[0] + w[1] + w[2])
+        .collect::<Vec<u32>>()
+        .windows(2)
+        .filter(|w| w[0] < w[1])
+        .count()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_step_one() {
+        let depths: Vec<u32> = vec![199, 200, 208, 210, 200, 207, 240, 269, 260, 263];
+
+        assert_eq!(step_one(&depths), 7)
     }
 
-    println!("{:?}", increases)
+    #[test]
+    fn test_step_two() {
+        let depths: Vec<u32> = vec![199, 200, 208, 210, 200, 207, 240, 269, 260, 263];
+
+        assert_eq!(step_two(&depths), 5)
+    }
 }
