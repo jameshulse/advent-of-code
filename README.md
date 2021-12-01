@@ -1,2 +1,4 @@
-# advent-of-code
-A collection of attempts of the Advent of Code challenges
+# Advent of Code
+
+Documenting my attempts at the Advent of Code competition over the years. I use the event generally as an opportunity
+to try a new language.
