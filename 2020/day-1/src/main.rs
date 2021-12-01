@@ -5,7 +5,7 @@ fn main() {
     println!("Hello, world!");
 
     let lines = fs::read_to_string("input.txt").expect("Couldn't read input file.");
-    let values = lines
+    let values: Vec<u32> = lines
         .split("\n")
         .map(|val| val.parse::<u32>().expect("Invalid value in input file!"))
         .collect();
