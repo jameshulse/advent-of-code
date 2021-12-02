@@ -1,22 +1,25 @@
 use itertools::Itertools;
-use std::fs;
 
 fn main() {
-    let lines = fs::read_to_string("input").expect("Couldn't read input file.");
+    let lines = include_str!("input");
 
     dbg!(part_one(&lines));
     dbg!(part_two(&lines));
 }
 
+// Converts e.g "forward 5" to ("foward", 5)
+fn parse_command(line: &str) -> (&str, usize) {
+    let parts = &line.split_whitespace().collect_vec();
+
+    (parts[0], parts[1].parse::<usize>().unwrap())
+}
+
 fn part_one(input: &str) -> usize {
-    let mut horizontal: usize = 0;
-    let mut depth: usize = 0;
+    let mut horizontal = 0;
+    let mut depth = 0;
 
-    for line in input.lines() {
-        let parts = &line.split(' ').collect_vec();
-        let value = parts[1].parse::<usize>().unwrap();
-
-        match parts[0] {
+    for (command, value) in input.lines().map(parse_command) {
+        match command {
             "forward" => horizontal += value,
             "down" => depth += value,
             "up" => depth -= value,
@@ -28,15 +31,12 @@ fn part_one(input: &str) -> usize {
 }
 
 fn part_two(input: &str) -> usize {
-    let mut horizontal: usize = 0;
-    let mut depth: usize = 0;
-    let mut aim: usize = 0;
+    let mut horizontal = 0;
+    let mut depth = 0;
+    let mut aim = 0;
 
-    for line in input.lines() {
-        let parts = &line.split(' ').collect_vec();
-        let value = parts[1].parse::<usize>().unwrap();
-
-        match parts[0] {
+    for (command, value) in input.lines().map(parse_command) {
+        match command {
             "forward" => {
                 horizontal += value;
                 depth += aim * value;
@@ -55,26 +55,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_part_one() {
-        let input = "forward 5
-down 5
-forward 8
-up 3
-down 8
-forward 2";
+    fn test_parts() {
+        let input = include_str!("input.test");
 
         assert_eq!(part_one(input), 150);
-    }
-
-    #[test]
-    fn test_part_two() {
-        let input = "forward 5
-down 5
-forward 8
-up 3
-down 8
-forward 2";
-
         assert_eq!(part_two(input), 900);
     }
 }
