@@ -51,12 +51,12 @@ fn get_diagram_size(lines: &[(Point, Point)]) -> (usize, usize) {
     (max_x + 1, max_y + 1)
 }
 
-fn count_with_value(diagram: &Vec<Vec<usize>>, search_val: usize) -> usize {
+fn count_with_value(diagram: &Vec<Vec<usize>>) -> usize {
     let mut with_val = 0;
 
     for row in diagram.iter() {
         for val in row.iter() {
-            with_val += if *val == search_val { 1 } else { 0 };
+            with_val += if *val > 1 { 1 } else { 0 };
         }
     }
 
@@ -66,8 +66,16 @@ fn count_with_value(diagram: &Vec<Vec<usize>>, search_val: usize) -> usize {
 fn mark_line(diagram: &mut Vec<Vec<usize>>, p_from: &Point, p_to: &Point) -> usize {
     let mut max_seen = 0;
 
-    for y in (cmp::min(p_from.y, p_to.y))..(cmp::max(p_from.y, p_to.y) + 1) {
-        for x in (cmp::min(p_from.x, p_to.x))..(cmp::max(p_from.x, p_to.x) + 1) {
+    println!(
+        "Marking from {},{} to {},{}",
+        cmp::min(p_from.x, p_to.x),
+        cmp::min(p_from.y, p_to.y),
+        cmp::max(p_from.x, p_to.x),
+        cmp::max(p_from.y, p_to.y),
+    );
+
+    for y in (cmp::min(p_from.y, p_to.y))..=(cmp::max(p_from.y, p_to.y)) {
+        for x in (cmp::min(p_from.x, p_to.x))..=(cmp::max(p_from.x, p_to.x)) {
             diagram[y][x] += 1;
 
             if diagram[y][x] > max_seen {
@@ -77,6 +85,21 @@ fn mark_line(diagram: &mut Vec<Vec<usize>>, p_from: &Point, p_to: &Point) -> usi
     }
 
     max_seen
+}
+
+fn visualize_diagram(diagram: &[Vec<usize>]) {
+    for row in diagram.iter() {
+        println!(
+            "{}",
+            row.iter()
+                .map(|v| if *v == 0 {
+                    ".".to_string()
+                } else {
+                    v.to_string()
+                })
+                .join("")
+        )
+    }
 }
 
 fn part_one(input: &[String]) -> usize {
@@ -104,33 +127,24 @@ fn part_one(input: &[String]) -> usize {
         let p_to = line.1;
 
         // Find straight lines
-        if p_from.x == p_to.x {
-            println!("Straight line x= ({:?}) to ({:?})", p_from, p_to);
+        if p_from.x == p_to.x || p_from.y == p_to.y {
+            let local_max = mark_line(&mut diagram, &p_from, &p_to);
 
-            for y in (cmp::min(p_from.y, p_to.y))..(cmp::max(p_from.y, p_to.y) + 1) {
-                diagram[y][p_from.x] += 1;
-
-                if diagram[y][p_from.x] > max_value {
-                    max_value = diagram[y][p_from.x];
-                }
-            }
-        } else if p_from.y == p_to.y {
-            println!("Straight line y= ({:?}) to ({:?})", p_from, p_to);
-
-            for x in (cmp::min(p_from.x, p_to.x))..(cmp::max(p_from.x, p_to.x) + 1) {
-                diagram[p_from.y][x] += 1;
-
-                if diagram[p_from.y][x] > max_value {
-                    max_value = diagram[p_from.y][x];
-                }
-            }
+            max_value = if local_max > max_value {
+                local_max
+            } else {
+                max_value
+            };
         }
     }
 
-    dbg!(&diagram);
-    dbg!(max_value);
+    // visualize_diagram(&diagram);
+    // dbg!(max_value);
+    // dbg!(count_with_value(&diagram, 1));
+    // dbg!(count_with_value(&diagram, 2));
+    // dbg!(count_with_value(&diagram, 3));
 
-    count_with_value(&diagram, max_value)
+    count_with_value(&diagram)
 }
 
 fn part_two(input: &[String]) -> usize {
@@ -167,13 +181,9 @@ fn test_make_point() {
 
 #[test]
 fn test_count_with_value() {
-    let diagram = vec![vec![0, 2, 5], vec![0, 5, 5], vec![3, 4, 5], vec![0, 5, 5]];
+    let diagram = vec![vec![0, 2, 5], vec![1, 5, 5], vec![3, 4, 5], vec![0, 5, 5]];
 
-    assert_eq!(count_with_value(&diagram, 0), 3);
-    assert_eq!(count_with_value(&diagram, 2), 1);
-    assert_eq!(count_with_value(&diagram, 3), 1);
-    assert_eq!(count_with_value(&diagram, 4), 1);
-    assert_eq!(count_with_value(&diagram, 5), 6);
+    assert_eq!(count_with_value(&diagram), 9);
 }
 
 #[test]
