@@ -5,44 +5,28 @@ use std::fmt;
 fn main() {
     let lines = include_str!("input");
 
-    dbg!(part_one(&lines));
-    dbg!(part_two(&lines));
+    dbg!(assert_eq!(part_one(lines), 51034));
+    dbg!(assert_eq!(part_two(lines), 5434));
 }
 
+#[derive(fmt::Debug)]
 struct Board {
     rows: Vec<Vec<Place>>,
     won: bool,
 }
 
-impl fmt::Debug for Board {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Point")
-            .field("rows", &self.rows)
-            .field("won", &self.won)
-            .finish()
-    }
-}
-
+#[derive(fmt::Debug)]
 struct Place {
     value: String,
     drawn: bool,
-}
-
-impl fmt::Debug for Place {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Point")
-            .field("value", &self.value)
-            .field("drawn", &self.drawn)
-            .finish()
-    }
 }
 
 fn build_boards(input: &str) -> Vec<Board> {
     let lines: Vec<&str> = input.lines().collect_vec();
     let mut boards: Vec<Board> = vec![];
 
-    for i in 1..lines.len() {
-        if lines[i] == "" {
+    for line in lines.iter().skip(1) {
+        if line.is_empty() {
             boards.push(Board {
                 rows: vec![],
                 won: false,
@@ -50,7 +34,7 @@ fn build_boards(input: &str) -> Vec<Board> {
             continue;
         }
 
-        let board_line = lines[i]
+        let board_line = line
             .split_whitespace()
             .map(|v| Place {
                 value: v.to_owned(),
@@ -65,10 +49,10 @@ fn build_boards(input: &str) -> Vec<Board> {
 }
 
 fn mark_draw(board: &mut Board, draw: &str) {
-    for i in 0..board.rows.len() {
-        for j in 0..board.rows[i].len() {
-            if board.rows[i][j].value == draw {
-                board.rows[i][j].drawn = true
+    for row in board.rows.iter_mut() {
+        for col in row.iter_mut() {
+            if col.value == draw {
+                col.drawn = true
             }
         }
     }
@@ -78,23 +62,20 @@ fn check_win(board: &Board) -> bool {
     // Check rows
     for row in board.rows.iter() {
         if row.iter().all(|v| v.drawn) {
-            // dbg!("winning row", row);
-            dbg!(board);
             return true;
         }
     }
 
     // Check columns
-    for i in 0..5 {
+    for i in 0..board.rows[0].len() {
         let values = board.rows.iter().map(|l| &l[i]).collect_vec();
 
         if values.iter().all(|v| v.drawn) {
-            dbg!("winning col", values);
             return true;
         }
     }
 
-    return false;
+    false
 }
 
 fn part_one(input: &str) -> usize {
@@ -104,9 +85,7 @@ fn part_one(input: &str) -> usize {
     let mut winning_total = 0;
 
     // Do draws
-    for draw in draws.split(",") {
-        println!("Pulling draw: {:?}", draw);
-
+    for draw in draws.split(',') {
         for board in boards.iter_mut() {
             mark_draw(board, draw);
 
@@ -116,8 +95,6 @@ fn part_one(input: &str) -> usize {
 
                 for row in board.rows.iter() {
                     for col in row.iter() {
-                        dbg!(col.drawn);
-
                         if !col.drawn {
                             winning_total += col.value.parse::<usize>().unwrap();
                         }
@@ -136,7 +113,7 @@ fn part_one(input: &str) -> usize {
 
     dbg!(winning_draw, winning_total);
 
-    return winning_draw * winning_total;
+    winning_draw * winning_total
 }
 
 fn part_two(input: &str) -> usize {
@@ -146,7 +123,7 @@ fn part_two(input: &str) -> usize {
     let mut winning_total: usize = 0;
 
     // Do draws
-    for draw in draws.split(",") {
+    for draw in draws.split(',') {
         for board in boards.iter_mut() {
             mark_draw(board, draw);
 
@@ -163,13 +140,11 @@ fn part_two(input: &str) -> usize {
                         }
                     }
                 }
-
-                dbg!(last_draw, winning_total);
             }
         }
     }
 
-    return last_draw * winning_total;
+    last_draw * winning_total
 }
 
 #[test]
@@ -215,38 +190,114 @@ fn test_mark_draw() {
     let mut board = build_boards(input);
     mark_draw(&mut board[0], "7");
 
-    assert_eq!(board[0].rows[2][4].drawn, true);
+    assert!(board[0].rows[2][4].drawn);
 }
 
-// 51034 too high
+#[test]
+fn test_win() {
+    let winning_row = Board {
+        rows: vec![vec![
+            Place {
+                value: "14".to_string(),
+                drawn: true,
+            },
+            Place {
+                value: "21".to_string(),
+                drawn: true,
+            },
+            Place {
+                value: "17".to_string(),
+                drawn: true,
+            },
+            Place {
+                value: "24".to_string(),
+                drawn: true,
+            },
+            Place {
+                value: "4".to_string(),
+                drawn: true,
+            },
+        ]],
+        won: false,
+    };
 
-// #[test]
-// fn test_win() {
-//     let winning_row = vec![
-//         vec!["14", "21", "17", "24", "4"],
-//         vec!["10", "16", "15", "9", "19"],
-//         vec!["X", "X", "X", "X", "X"],
-//         vec!["22", "11", "13", "6", "5"],
-//         vec!["2", "0", "12", "3", "7"],
-//     ];
+    let winning_col = Board {
+        rows: vec![
+            vec![Place {
+                value: "14".to_string(),
+                drawn: true,
+            }],
+            vec![Place {
+                value: "21".to_string(),
+                drawn: true,
+            }],
+            vec![Place {
+                value: "17".to_string(),
+                drawn: true,
+            }],
+            vec![Place {
+                value: "24".to_string(),
+                drawn: true,
+            }],
+            vec![Place {
+                value: "2".to_string(),
+                drawn: true,
+            }],
+        ],
+        won: false,
+    };
 
-//     let winning_col = vec![
-//         vec!["14", "X", "17", "24", "4"],
-//         vec!["X", "X", "15", "9", "19"],
-//         vec!["X", "X", "23", "26", "20"],
-//         vec!["X", "X", "X", "X", "5"],
-//         vec!["2", "X", "12", "3", "7"],
-//     ];
+    let losing_board = Board {
+        rows: vec![
+            vec![Place {
+                value: "14".to_string(),
+                drawn: false,
+            }],
+            vec![Place {
+                value: "21".to_string(),
+                drawn: false,
+            }],
+            vec![Place {
+                value: "17".to_string(),
+                drawn: false,
+            }],
+            vec![Place {
+                value: "24".to_string(),
+                drawn: false,
+            }],
+            vec![Place {
+                value: "2".to_string(),
+                drawn: false,
+            }],
+        ],
+        won: false,
+    };
 
-//     let losing = vec![
-//         vec!["X", "21", "X", "24", "4"],
-//         vec!["10", "X", "15", "X", "19"],
-//         vec!["X", "8", "X", "26", "X"],
-//         vec!["X", "11", "X", "X", "5"],
-//         vec!["X", "0", "12", "3", "X"],
-//     ];
+    //     let winning_row = vec![
+    //         vec!["14", "21", "17", "24", "4"],
+    //         vec!["10", "16", "15", "9", "19"],
+    //         vec!["X", "X", "X", "X", "X"],
+    //         vec!["22", "11", "13", "6", "5"],
+    //         vec!["2", "0", "12", "3", "7"],
+    //     ];
 
-//     assert_eq!(check_win(winning_row), true);
-//     assert_eq!(check_win(winning_col), true);
-//     assert_eq!(check_win(losing), false);
-// }
+    //     let winning_col = vec![
+    //         vec!["14", "X", "17", "24", "4"],
+    //         vec!["X", "X", "15", "9", "19"],
+    //         vec!["X", "X", "23", "26", "20"],
+    //         vec!["X", "X", "X", "X", "5"],
+    //         vec!["2", "X", "12", "3", "7"],
+    //     ];
+
+    //     let losing = vec![
+    //         vec!["X", "21", "X", "24", "4"],
+    //         vec!["10", "X", "15", "X", "19"],
+    //         vec!["X", "8", "X", "26", "X"],
+    //         vec!["X", "11", "X", "X", "5"],
+    //         vec!["X", "0", "12", "3", "X"],
+    //     ];
+
+    assert!(check_win(&winning_row));
+    assert!(check_win(&winning_col));
+    assert!(!check_win(&losing_board));
+}

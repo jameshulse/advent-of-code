@@ -3,8 +3,8 @@ use itertools::Itertools;
 fn main() {
     let lines = include_str!("input");
 
-    dbg!(part_one(&lines));
-    dbg!(part_two(&lines));
+    dbg!(part_one(lines));
+    dbg!(part_two(lines));
 }
 
 // Converts e.g "forward 5" to ("foward", 5)
