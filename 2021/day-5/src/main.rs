@@ -1,4 +1,3 @@
-use indoc::indoc;
 use itertools::Itertools;
 use std::cmp;
 use std::fmt;
@@ -9,60 +8,59 @@ struct Point {
     y: usize,
 }
 
-fn make_point(coords: String) -> Point {
-    let parts = coords.split(',').collect_vec();
+impl Point {
+    fn from_coords(coords: String) -> Point {
+        let parts = coords.split(',').collect_vec();
 
-    Point {
-        x: parts[0].parse().unwrap(),
-        y: parts[1].parse().unwrap(),
+        Point {
+            x: parts[0].parse().unwrap(),
+            y: parts[1].parse().unwrap(),
+        }
     }
 }
 
 fn main() {
     let lines = parse_input(include_str!("input"));
 
-    dbg!(part_one(&lines));
-    dbg!(part_two(&lines));
+    dbg!(assert_eq!(part_one(&lines), 7414));
+    dbg!(assert_eq!(part_two(&lines), 19676));
 }
 
-fn parse_input(raw: &str) -> Vec<String> {
-    raw.lines().map(|line| line.to_string()).collect()
+fn parse_input(raw: &str) -> Vec<(Point, Point)> {
+    raw.lines()
+        .map(|l| {
+            let parts = l.split(' ').collect_vec();
+
+            (
+                Point::from_coords(parts[0].to_string()),
+                Point::from_coords(parts[2].to_string()),
+            )
+        })
+        .collect()
 }
 
-fn get_diagram_size(lines: &[(Point, Point)]) -> (usize, usize) {
+// Determines the maximum size of 2D vector to store all lines
+fn init_diagram(lines: &[(Point, Point)]) -> Vec<Vec<usize>> {
     let mut max_x = 0;
     let mut max_y = 0;
 
     for line in lines {
-        if line.0.x > max_x {
-            max_x = line.0.x;
-        }
-        if line.0.y > max_y {
-            max_y = line.0.y
-        }
-        if line.1.x > max_x {
-            max_x = line.1.x;
-        }
-        if line.1.y > max_y {
-            max_y = line.1.y
-        }
+        max_x = cmp::max(max_x, cmp::max(line.0.x, line.1.x));
+        max_y = cmp::max(max_y, cmp::max(line.0.y, line.1.y));
     }
 
-    (max_x + 1, max_y + 1)
+    vec![vec![0; max_x + 1]; max_y + 1]
 }
 
-fn count_intersections(diagram: &Vec<Vec<usize>>) -> usize {
-    let mut with_val = 0;
-
-    for row in diagram.iter() {
-        for val in row.iter() {
-            with_val += if *val > 1 { 1 } else { 0 };
-        }
-    }
-
-    with_val
+fn count_intersections(diagram: &[Vec<usize>]) -> usize {
+    diagram
+        .iter()
+        .flat_map(|r| r.iter())
+        .filter(|&v| *v > 1)
+        .count()
 }
 
+// TODO: Any improvements in logic?
 fn mark_line(diagram: &mut Vec<Vec<usize>>, p_from: &Point, p_to: &Point) -> usize {
     let mut max_seen = 0;
     let mut x = p_from.x;
@@ -81,14 +79,13 @@ fn mark_line(diagram: &mut Vec<Vec<usize>>, p_from: &Point, p_to: &Point) -> usi
 
         if x < p_to.x {
             x += 1;
-        }
-        if x > p_to.x {
+        } else if x > p_to.x {
             x -= 1;
         }
+
         if y < p_to.y {
             y += 1;
-        }
-        if y > p_to.y {
+        } else if y > p_to.y {
             y -= 1;
         }
     }
@@ -111,54 +108,41 @@ fn visualize_diagram(diagram: &[Vec<usize>]) {
     }
 }
 
-fn part_one(input: &[String]) -> usize {
-    let all_lines = input
-        .iter()
-        .map(|l| {
-            let parts = l.split(' ').collect_vec();
-
-            (
-                make_point(parts[0].to_string()),
-                make_point(parts[2].to_string()),
-            )
-        })
-        .collect_vec();
-    let size = get_diagram_size(&all_lines);
-
-    let mut diagram: Vec<Vec<usize>> = vec![vec![0; size.0]; size.1];
+fn part_one(input: &[(Point, Point)]) -> usize {
+    let mut diagram: Vec<Vec<usize>> = init_diagram(input);
     let mut max_value = 0;
 
-    dbg!(size);
-    dbg!(all_lines.len());
+    for line in input {
+        // Handle straight lines only
+        if line.0.x == line.1.x || line.0.y == line.1.y {
+            let local_max = mark_line(&mut diagram, &line.0, &line.1);
 
-    for line in all_lines {
-        let p_from = line.0;
-        let p_to = line.1;
+            max_value = cmp::max(max_value, local_max);
+        }
+    }
 
-        // Find straight lines
-        // if p_from.x == p_to.x || p_from.y == p_to.y {
-        let local_max = mark_line(&mut diagram, &p_from, &p_to);
+    count_intersections(&diagram)
+}
+
+fn part_two(input: &[(Point, Point)]) -> usize {
+    let mut diagram: Vec<Vec<usize>> = init_diagram(input);
+    let mut max_value = 0;
+
+    for line in input {
+        let local_max = mark_line(&mut diagram, &line.0, &line.1);
 
         max_value = if local_max > max_value {
             local_max
         } else {
             max_value
         };
-        // }
     }
-
-    // visualize_diagram(&diagram);
-    // dbg!(max_value);
-    // dbg!(count_intersections(&diagram, 1));
-    // dbg!(count_intersections(&diagram, 2));
-    // dbg!(count_intersections(&diagram, 3));
 
     count_intersections(&diagram)
 }
 
-fn part_two(input: &[String]) -> usize {
-    todo!();
-}
+#[cfg(test)]
+use indoc::indoc;
 
 #[test]
 fn test_parts() {
@@ -175,14 +159,13 @@ fn test_parts() {
         5,5 -> 8,2
     "});
 
-    // assert_eq!(part_one(&input), 5);
-    assert_eq!(part_one(&input), 12);
-    // assert_eq!(part_two(&input), 0);
+    assert_eq!(part_one(&input), 5);
+    assert_eq!(part_two(&input), 12);
 }
 
 #[test]
-fn test_make_point() {
-    let result = make_point("1,2".to_string());
+fn test_from_coords() {
+    let result = Point::from_coords("1,2".to_string());
     let expected = Point { x: 1, y: 2 };
 
     assert_eq!(result.x, expected.x);
