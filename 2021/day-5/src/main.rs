@@ -51,7 +51,7 @@ fn get_diagram_size(lines: &[(Point, Point)]) -> (usize, usize) {
     (max_x + 1, max_y + 1)
 }
 
-fn count_with_value(diagram: &Vec<Vec<usize>>) -> usize {
+fn count_intersections(diagram: &Vec<Vec<usize>>) -> usize {
     let mut with_val = 0;
 
     for row in diagram.iter() {
@@ -65,22 +65,31 @@ fn count_with_value(diagram: &Vec<Vec<usize>>) -> usize {
 
 fn mark_line(diagram: &mut Vec<Vec<usize>>, p_from: &Point, p_to: &Point) -> usize {
     let mut max_seen = 0;
+    let mut x = p_from.x;
+    let mut y = p_from.y;
 
-    println!(
-        "Marking from {},{} to {},{}",
-        cmp::min(p_from.x, p_to.x),
-        cmp::min(p_from.y, p_to.y),
-        cmp::max(p_from.x, p_to.x),
-        cmp::max(p_from.y, p_to.y),
-    );
+    loop {
+        diagram[y][x] += 1;
 
-    for y in (cmp::min(p_from.y, p_to.y))..=(cmp::max(p_from.y, p_to.y)) {
-        for x in (cmp::min(p_from.x, p_to.x))..=(cmp::max(p_from.x, p_to.x)) {
-            diagram[y][x] += 1;
+        if diagram[y][x] > max_seen {
+            max_seen = diagram[y][x];
+        }
 
-            if diagram[y][x] > max_seen {
-                max_seen = diagram[y][x];
-            }
+        if x == p_to.x && y == p_to.y {
+            break;
+        }
+
+        if x < p_to.x {
+            x += 1;
+        }
+        if x > p_to.x {
+            x -= 1;
+        }
+        if y < p_to.y {
+            y += 1;
+        }
+        if y > p_to.y {
+            y -= 1;
         }
     }
 
@@ -127,24 +136,24 @@ fn part_one(input: &[String]) -> usize {
         let p_to = line.1;
 
         // Find straight lines
-        if p_from.x == p_to.x || p_from.y == p_to.y {
-            let local_max = mark_line(&mut diagram, &p_from, &p_to);
+        // if p_from.x == p_to.x || p_from.y == p_to.y {
+        let local_max = mark_line(&mut diagram, &p_from, &p_to);
 
-            max_value = if local_max > max_value {
-                local_max
-            } else {
-                max_value
-            };
-        }
+        max_value = if local_max > max_value {
+            local_max
+        } else {
+            max_value
+        };
+        // }
     }
 
     // visualize_diagram(&diagram);
     // dbg!(max_value);
-    // dbg!(count_with_value(&diagram, 1));
-    // dbg!(count_with_value(&diagram, 2));
-    // dbg!(count_with_value(&diagram, 3));
+    // dbg!(count_intersections(&diagram, 1));
+    // dbg!(count_intersections(&diagram, 2));
+    // dbg!(count_intersections(&diagram, 3));
 
-    count_with_value(&diagram)
+    count_intersections(&diagram)
 }
 
 fn part_two(input: &[String]) -> usize {
@@ -166,7 +175,8 @@ fn test_parts() {
         5,5 -> 8,2
     "});
 
-    assert_eq!(part_one(&input), 5);
+    // assert_eq!(part_one(&input), 5);
+    assert_eq!(part_one(&input), 12);
     // assert_eq!(part_two(&input), 0);
 }
 
@@ -180,10 +190,10 @@ fn test_make_point() {
 }
 
 #[test]
-fn test_count_with_value() {
+fn test_count_intersections() {
     let diagram = vec![vec![0, 2, 5], vec![1, 5, 5], vec![3, 4, 5], vec![0, 5, 5]];
 
-    assert_eq!(count_with_value(&diagram), 9);
+    assert_eq!(count_intersections(&diagram), 9);
 }
 
 #[test]
