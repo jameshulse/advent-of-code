@@ -16,13 +16,13 @@ fn part_one(input: &str, simulation_days: usize) -> usize {
     for _ in 1..=simulation_days {
         let mut new_fish: Vec<u8> = vec![];
 
-        for i in 0..all_fish.len() {
-            if all_fish[i] == 0 {
+        for fish in all_fish.iter_mut() {
+            if *fish == 0 {
                 new_fish.push(8);
 
-                all_fish[i] = 6;
+                *fish = 6;
             } else {
-                all_fish[i] -= 1;
+                *fish -= 1;
             }
         }
 
@@ -73,7 +73,7 @@ use indoc::indoc;
 fn test_parts() {
     let input = indoc! {"3,4,3,1,2"}.to_string();
 
-    // assert_eq!(part_one(&input, 18), 26);
+    assert_eq!(part_one(&input, 18), 26);
     assert_eq!(part_two(&input, 18), 26);
     assert_eq!(part_two(&input, 256), 26984457539);
 }
