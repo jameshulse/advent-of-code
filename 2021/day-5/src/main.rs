@@ -10,12 +10,11 @@ struct Point {
 
 impl Point {
     fn from_coords(coords: String) -> Point {
-        let parts = coords.split(',').collect_vec();
-
-        Point {
-            x: parts[0].parse().unwrap(),
-            y: parts[1].parse().unwrap(),
-        }
+        coords
+            .split_once(',')
+            .map(|(a, b)| (a.parse().unwrap(), b.parse().unwrap()))
+            .map(|(x, y)| Point { x, y })
+            .unwrap()
     }
 }
 
@@ -29,11 +28,11 @@ fn main() {
 fn parse_input(raw: &str) -> Vec<(Point, Point)> {
     raw.lines()
         .map(|l| {
-            let parts = l.split(' ').collect_vec();
+            let parts = l.split_once(" -> ").unwrap();
 
             (
-                Point::from_coords(parts[0].to_string()),
-                Point::from_coords(parts[2].to_string()),
+                Point::from_coords(parts.0.to_string()),
+                Point::from_coords(parts.1.to_string()),
             )
         })
         .collect()
