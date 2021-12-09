@@ -28,47 +28,37 @@ fn part_one(input: &str) -> usize {
         .fold(0, |a, n| a + n + 1)
 }
 
-fn find_low_points(lines: &Vec<Vec<usize>>) -> Vec<(usize, usize)> {
-    let mut result: Vec<(usize, usize)> = vec![];
-
-    for (y, line) in lines.iter().enumerate() {
-        for (x, num) in line.iter().enumerate() {
-            let mut compare_to: Vec<(usize, usize)> = vec![];
-
-            if x > 0 {
-                compare_to.push((x - 1, y));
-            }
-
-            if x < line.len() - 1 {
-                compare_to.push((x + 1, y))
-            }
-
-            if y > 0 {
-                compare_to.push((x, y - 1));
-            }
-
-            if y < lines.len() - 1 {
-                compare_to.push((x, y + 1));
-            }
-
-            let is_low = compare_to.iter().all(|(cx, cy)| {
-                lines
-                    .get(*cy)
-                    .ok_or(format!("Failed for num {} at ({}, {})", num, x, y))
-                    .unwrap()
-                    .get(*cx)
-                    .ok_or(format!("Failed for num {} at ({}, {})", num, x, y))
-                    .unwrap()
-                    > num
-            });
-
-            if is_low {
-                result.push((x, y));
-            }
+fn get_neighbours(x: usize, y: usize, width: usize, height: usize) -> Vec<(usize, usize)> {
+    [
+        (x > 0, ((x as isize) - 1, (y as isize))),
+        (x < width - 1, ((x as isize) + 1, (y as isize))),
+        (y > 0, ((x as isize), (y as isize) - 1)),
+        (y < height - 1, ((x as isize), (y as isize) + 1)),
+    ]
+    .into_iter()
+    .filter_map(|(cond, val)| {
+        if cond {
+            Some((val.0 as usize, val.1 as usize))
+        } else {
+            None
         }
-    }
+    })
+    .collect_vec()
+}
 
-    result
+fn find_low_points(map: &Vec<Vec<usize>>) -> Vec<(usize, usize)> {
+    let width = map[0].len(); // TODO: Better way to get width
+    let height = map.len();
+
+    (0..height)
+        .cartesian_product(0..width)
+        .filter(|&(y, x)| {
+            get_neighbours(x, y, width, height)
+                .into_iter()
+                .all(|(cx, cy)| map[cy][cx] > map[y][x])
+        })
+        .map(|(y, x)| (x, y))
+        .collect_vec()
 }
 
 fn fill_basin(
@@ -77,46 +67,46 @@ fn fill_basin(
     start_x: usize,
     start_y: usize,
 ) -> usize {
-    let get_val = |x, y| map.get::<usize>(y).unwrap().get::<usize>(x).unwrap();
-    let n = get_val(start_x, start_y);
+    // let get_val = |x, y| map.get::<usize>(y).unwrap().get::<usize>(x).unwrap();
+    let n = map[start_y][start_x];
     let mut size = 1;
 
+    if visited.contains(&(start_x, start_y)) {
+        return 0;
+    }
+
     visited.push((start_x, start_y));
+
+    // let width = map[0].len(); // TODO: Build these into the 'map'
+    // let height = map.len();
+    // let neighbours = get_neighbours(start_x, start_y, width, height);
 
     // println!("Visiting: {} at ({},{})", n, start_x, start_y);
 
     // Left
-    if start_x > 0
-        && !visited.contains(&(start_x - 1, start_y))
-        && get_val(start_x - 1, start_y) > n
-        && get_val(start_x - 1, start_y) != &(9 as usize)
+    if start_x > 0 && &map[start_y][start_x - 1] > &n && &map[start_y][start_x - 1] != &(9 as usize)
     {
         size += fill_basin(&map, visited, start_x - 1, start_y);
     }
 
     // Right
     if start_x < map.get(start_y).unwrap().len() - 1
-        && !visited.contains(&(start_x + 1, start_y))
-        && get_val(start_x + 1, start_y) > n
-        && get_val(start_x + 1, start_y) != &(9 as usize)
+        && &map[start_y][start_x + 1] > &n
+        && &map[start_y][start_x + 1] != &(9 as usize)
     {
         size += fill_basin(&map, visited, start_x + 1, start_y);
     }
 
     // Up
-    if start_y > 0
-        && !visited.contains(&(start_x, start_y - 1))
-        && get_val(start_x, start_y - 1) > n
-        && get_val(start_x, start_y - 1) != &(9 as usize)
+    if start_y > 0 && &map[start_y - 1][start_x] > &n && &map[start_y - 1][start_x] != &(9 as usize)
     {
         size += fill_basin(&map, visited, start_x, start_y - 1);
     }
 
     // Down
     if start_y < map.len() - 1
-        && !visited.contains(&(start_x, start_y + 1))
-        && get_val(start_x, start_y + 1) > n
-        && get_val(start_x, start_y + 1) != &(9 as usize)
+        && &map[start_y + 1][start_x] > &n
+        && &map[start_y + 1][start_x] != &(9 as usize)
     {
         size += fill_basin(&map, visited, start_x, start_y + 1);
     }
@@ -126,24 +116,14 @@ fn fill_basin(
 
 fn part_two(input: &str) -> usize {
     let map = parse_input(input);
-    let low_points = find_low_points(&map);
-    let mut basin_sizes: Vec<usize> = vec![];
 
-    for p in low_points {
-        basin_sizes.push(fill_basin(
-            &map,
-            &mut Vec::<(usize, usize)>::new(),
-            p.0,
-            p.1,
-        ));
-    }
-
-    basin_sizes
+    find_low_points(&map)
         .iter()
+        .map(|p| fill_basin(&map, &mut Vec::<(usize, usize)>::new(), p.0, p.1))
         .sorted()
         .rev()
         .take(3)
-        .fold(1, |a, s| a * s)
+        .product::<usize>()
 }
 
 #[cfg(test)]
@@ -160,6 +140,22 @@ fn test_fill_basin() {
     let map = parse_input(&input);
 
     assert_eq!(fill_basin(&map, &mut Vec::<(usize, usize)>::new(), 5, 0), 9);
+}
+
+#[test]
+fn test_get_neighbours() {
+    assert_eq!(get_neighbours(0, 0, 5, 5), vec![(1, 0), (0, 1)]);
+}
+
+#[test]
+fn test_find_low_points() {
+    let input = indoc! {"
+        210
+        921
+    "};
+    let map = parse_input(&input);
+
+    assert_eq!(find_low_points(&map), vec![(2, 0)]);
 }
 
 #[test]
