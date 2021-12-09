@@ -23,7 +23,15 @@ fn part_one(entries: &Vec<Entry>) -> usize {
 }
 
 fn part_two(entries: &Vec<Entry>) -> usize {
-    0
+    let mut output_sum = 0;
+
+    for entry in entries {
+        let mappings = solve_mappings(entry);
+
+        output_sum += resolve_output(&mappings, &entry.output);
+    }
+
+    output_sum
 }
 
 struct Entry {
@@ -31,9 +39,28 @@ struct Entry {
     output: Vec<String>,
 }
 
-// TODO: impl for Iter so I can call e.g entry.input.find_by_len(2)
+// TODO: impl for Iter so I can call e.g entry.input.find_by_len(2)?
 fn find_by_len(target: &[String], len: usize) -> &String {
     target.iter().find(|e| e.len() == len).unwrap()
+}
+
+fn parse_input(input: &str) -> Vec<Entry> {
+    input
+        .lines()
+        .map(|l| l.split_once(" | ").unwrap())
+        .map(|(sig_in, sig_out)| Entry {
+            input: sig_in
+                .trim()
+                .split(' ')
+                .map(|s| s.chars().sorted().collect::<String>())
+                .collect(),
+            output: sig_out
+                .trim()
+                .split(' ')
+                .map(|s| s.chars().sorted().collect::<String>())
+                .collect(),
+        })
+        .collect()
 }
 
 // Example used for explained solutions below:
@@ -50,9 +77,20 @@ fn find_by_len(target: &[String], len: usize) -> &String {
 // "eafb" (4) doesn't contain 'g', therefore "e" is solved as "g"
 
 // Solve for D
-// (4) remove "c" and "f" from 1 and "b" to leave "f"
-// "eafb".replace("ab", "") -> "ef", "ef".replace("e", "") -> "b" is solved as "f"
-fn solve_entry(entry: &Entry) -> usize {
+// "eafb" (4) remove unknown "c" and "f" from 1 and mapped "b" to leave solution for "d"
+// "eafb".replace("ab", "") -> "ef", "ef".replace("e", "") -> "d" is solved as "f"
+
+// Solve for G
+// (5 len chars) -> remove mapped "a" and "d" -> letter occuring 3 times will be "g"
+// aabbcccdddefffg -> remove mapped "a" + "d" -> aabbccceg, triple letter is "c" so -> "g" is solved as "c"
+
+// Solve for C
+// (6 len chars) -> remove mapped "d" + "e" -> letter occurring 2 times will be "c"
+// cefabd cdfgeb cagedb -> (remove 'f' and 'g') -> ceabd cdeb caedb -> "c" solved as "a"
+
+// Solve for F
+// Remove "c" from 1 digits
+fn solve_mappings(entry: &Entry) -> HashMap<&str, String> {
     let mut mappings: HashMap<&str, String> = HashMap::new();
 
     let one = find_by_len(&entry.input, 2);
@@ -89,25 +127,6 @@ fn solve_entry(entry: &Entry) -> usize {
         }
     }
 
-    // Solve for "g" - Take 5 len digits, remove 'a', 'd' and find triple occurence
-    let triple_chars = len_five
-        .iter()
-        .flat_map(|s| {
-            let temp = &s.replace(mappings.get("a").unwrap(), "");
-
-            temp.chars().collect_vec()
-        })
-        .sorted()
-        .group_by(|&c| c)
-        .into_iter()
-        .filter_map(|(ch, g)| match g.collect_vec().len() {
-            1 => Some(ch),
-            _ => None,
-        })
-        .collect_vec();
-
-    // mappings.insert("c", double_chars[0].to_string());
-
     // Solve for "d"
     let solved_d = four
         .replace(one, "")
@@ -115,36 +134,88 @@ fn solve_entry(entry: &Entry) -> usize {
 
     mappings.insert("d", solved_d);
 
-    // <DEBUGGING>
-    assert_eq!(*&mappings.get("a").unwrap(), &"d".to_string());
-    assert_eq!(*&mappings.get("b").unwrap(), &"e".to_string());
-    assert_eq!(*&mappings.get("e").unwrap(), &"g".to_string());
-    assert_eq!(*&mappings.get("d").unwrap(), &"f".to_string());
-    // </DEBUGGING>
+    // Solve for "g" - Take 5 len digits, remove 'a', 'd' and find triple occurence
+    let triple_chars = len_five
+        .iter()
+        .flat_map(|s| {
+            s.replace(mappings.get("a").unwrap(), "")
+                .replace(mappings.get("d").unwrap(), "")
+                .chars()
+                .collect_vec()
+        })
+        .sorted()
+        .group_by(|&c| c)
+        .into_iter()
+        .filter_map(|(ch, g)| match g.collect_vec().len() {
+            3 => Some(ch),
+            _ => None,
+        })
+        .collect_vec();
 
-    // Solve for ...
+    mappings.insert("g", triple_chars[0].to_string());
 
-    // TODO: calculate result
-    0
+    // Solve for "c" -> Take 6 digit, remove 'd' and find letter occurring twice
+    let len_six = entry.input.iter().filter(|e| e.len() == 6).collect_vec();
+
+    let double_chars = len_six
+        .iter()
+        .flat_map(|s| {
+            s.replace(mappings.get("e").unwrap(), "")
+                .replace(mappings.get("d").unwrap(), "")
+                .chars()
+                .collect_vec()
+        })
+        .sorted()
+        .group_by(|&c| c)
+        .into_iter()
+        .filter_map(|(ch, g)| match g.collect_vec().len() {
+            2 => Some(ch),
+            _ => None,
+        })
+        .collect_vec();
+
+    mappings.insert("c", double_chars[0].to_string());
+
+    // Solve for "f" -> Remove 'c' from 1
+    let solved_f = one.replace(mappings.get("c").unwrap(), "");
+
+    mappings.insert("f", solved_f);
+
+    mappings
 }
 
-fn parse_input(input: &str) -> Vec<Entry> {
-    input
-        .lines()
-        .map(|l| l.split_once(" | ").unwrap())
-        .map(|(sig_in, sig_out)| Entry {
-            input: sig_in
-                .trim()
-                .split(' ')
-                .map(|s| s.chars().sorted().collect::<String>())
-                .collect(),
-            output: sig_out
-                .trim()
-                .split(' ')
-                .map(|s| s.chars().sorted().collect::<String>())
-                .collect(),
-        })
-        .collect()
+const ZERO: String = "abcefg".to_string();
+const TWO: String = "acdeg".to_string();
+const THREE: String = "acdfg".to_string();
+const FIVE: String = "abdfg".to_string();
+const SIX: String = "abdefg".to_string();
+const NINE: String = "abcdfg".to_string();
+
+fn resolve_output(mappings: &HashMap<&str, String>, output: &Vec<String>) -> usize {
+    let mut out_str: String = "".to_string();
+
+    for unmapped in output {
+        let result = match unmapped.len() {
+            2 => '1',
+            4 => '4',
+            3 => '7',
+            7 => '8',
+            _ => match unmapped
+                .chars()
+                .map(|c| mappings.get(&c.to_string()).unwrap())
+                .join("")
+            {
+                ZERO => '0',
+                TWO => '2',
+                THREE => '2',
+                _ => panic!("Mapping not found!"),
+            },
+        };
+
+        out_str.push(result);
+    }
+
+    out_str.parse().unwrap()
 }
 
 #[cfg(test)]
@@ -194,7 +265,33 @@ fn test_solve_entry() {
         indoc! {"acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf"},
     );
 
-    assert_eq!(solve_entry(&entries[0]), 5353);
+    let mappings = solve_mappings(&entries[0]);
+
+    assert_eq!(mappings.get("a").unwrap(), &"d".to_string());
+    assert_eq!(mappings.get("b").unwrap(), &"e".to_string());
+    assert_eq!(mappings.get("c").unwrap(), &"a".to_string());
+    assert_eq!(mappings.get("d").unwrap(), &"f".to_string());
+    assert_eq!(mappings.get("e").unwrap(), &"g".to_string());
+    assert_eq!(mappings.get("f").unwrap(), &"b".to_string());
+    assert_eq!(mappings.get("g").unwrap(), &"c".to_string());
+}
+
+#[test]
+fn test_resolve_output() {
+    let entries = parse_input(
+        indoc! {"acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf"},
+    );
+    let mut mappings = HashMap::new();
+
+    mappings.insert("a", "d".to_string());
+    mappings.insert("b", "e".to_string());
+    mappings.insert("c", "a".to_string());
+    mappings.insert("d", "f".to_string());
+    mappings.insert("e", "g".to_string());
+    mappings.insert("f", "b".to_string());
+    mappings.insert("g", "c".to_string());
+
+    assert_eq!(resolve_output(&mappings, &entries[0].output), 5355);
 }
 
 // #[test]
