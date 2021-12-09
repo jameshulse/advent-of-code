@@ -67,51 +67,20 @@ fn fill_basin(
     start_x: usize,
     start_y: usize,
 ) -> usize {
-    // let get_val = |x, y| map.get::<usize>(y).unwrap().get::<usize>(x).unwrap();
-    let n = map[start_y][start_x];
-    let mut size = 1;
-
     if visited.contains(&(start_x, start_y)) {
         return 0;
     }
 
     visited.push((start_x, start_y));
 
-    // let width = map[0].len(); // TODO: Build these into the 'map'
-    // let height = map.len();
-    // let neighbours = get_neighbours(start_x, start_y, width, height);
+    let n = map[start_y][start_x];
+    let width = map[0].len(); // TODO: Build these into the 'map' object
+    let height = map.len();
 
-    // println!("Visiting: {} at ({},{})", n, start_x, start_y);
-
-    // Left
-    if start_x > 0 && &map[start_y][start_x - 1] > &n && &map[start_y][start_x - 1] != &(9 as usize)
-    {
-        size += fill_basin(&map, visited, start_x - 1, start_y);
-    }
-
-    // Right
-    if start_x < map.get(start_y).unwrap().len() - 1
-        && &map[start_y][start_x + 1] > &n
-        && &map[start_y][start_x + 1] != &(9 as usize)
-    {
-        size += fill_basin(&map, visited, start_x + 1, start_y);
-    }
-
-    // Up
-    if start_y > 0 && &map[start_y - 1][start_x] > &n && &map[start_y - 1][start_x] != &(9 as usize)
-    {
-        size += fill_basin(&map, visited, start_x, start_y - 1);
-    }
-
-    // Down
-    if start_y < map.len() - 1
-        && &map[start_y + 1][start_x] > &n
-        && &map[start_y + 1][start_x] != &(9 as usize)
-    {
-        size += fill_basin(&map, visited, start_x, start_y + 1);
-    }
-
-    size
+    get_neighbours(start_x, start_y, width, height)
+        .into_iter()
+        .filter(|&(x, y)| map[y][x] > n && map[y][x] != 9)
+        .fold(1, |a, (x, y)| a + fill_basin(&map, visited, x, y))
 }
 
 fn part_two(input: &str) -> usize {
