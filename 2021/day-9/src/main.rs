@@ -4,6 +4,7 @@ fn main() {
     let input = include_str!("input").to_string();
 
     dbg!(assert_eq!(part_one(&input), 452));
+    dbg!(assert_eq!(part_two(&input), 1263735));
 }
 
 fn parse_input(input: &str) -> Vec<Vec<usize>> {
@@ -70,19 +71,72 @@ fn find_low_points(lines: &Vec<Vec<usize>>) -> Vec<(usize, usize)> {
     result
 }
 
+fn fill_basin(
+    map: &Vec<Vec<usize>>,
+    visited: &mut Vec<(usize, usize)>,
+    start_x: usize,
+    start_y: usize,
+) -> usize {
+    let get_val = |x, y| map.get::<usize>(y).unwrap().get::<usize>(x).unwrap();
+    let n = get_val(start_x, start_y);
+    let mut size = 1;
+
+    visited.push((start_x, start_y));
+
+    // println!("Visiting: {} at ({},{})", n, start_x, start_y);
+
+    // Left
+    if start_x > 0
+        && !visited.contains(&(start_x - 1, start_y))
+        && get_val(start_x - 1, start_y) > n
+        && get_val(start_x - 1, start_y) != &(9 as usize)
+    {
+        size += fill_basin(&map, visited, start_x - 1, start_y);
+    }
+
+    // Right
+    if start_x < map.get(start_y).unwrap().len() - 1
+        && !visited.contains(&(start_x + 1, start_y))
+        && get_val(start_x + 1, start_y) > n
+        && get_val(start_x + 1, start_y) != &(9 as usize)
+    {
+        size += fill_basin(&map, visited, start_x + 1, start_y);
+    }
+
+    // Up
+    if start_y > 0
+        && !visited.contains(&(start_x, start_y - 1))
+        && get_val(start_x, start_y - 1) > n
+        && get_val(start_x, start_y - 1) != &(9 as usize)
+    {
+        size += fill_basin(&map, visited, start_x, start_y - 1);
+    }
+
+    // Down
+    if start_y < map.len() - 1
+        && !visited.contains(&(start_x, start_y + 1))
+        && get_val(start_x, start_y + 1) > n
+        && get_val(start_x, start_y + 1) != &(9 as usize)
+    {
+        size += fill_basin(&map, visited, start_x, start_y + 1);
+    }
+
+    size
+}
+
 fn part_two(input: &str) -> usize {
-    let lines = parse_input(input);
-    let low_points = find_low_points(&lines);
-    let basin_sizes: Vec<usize> = vec![];
+    let map = parse_input(input);
+    let low_points = find_low_points(&map);
+    let mut basin_sizes: Vec<usize> = vec![];
 
-    // let fill_basin = |(x, y)| {
-    //     let n = lines.get()
-
-    // };
-
-    // for p in low_points {
-    //     let size = fill_basin(p);
-    // }
+    for p in low_points {
+        basin_sizes.push(fill_basin(
+            &map,
+            &mut Vec::<(usize, usize)>::new(),
+            p.0,
+            p.1,
+        ));
+    }
 
     basin_sizes
         .iter()
@@ -94,6 +148,19 @@ fn part_two(input: &str) -> usize {
 
 #[cfg(test)]
 use indoc::indoc;
+
+#[test]
+fn test_fill_basin() {
+    let input = indoc! {"
+        943210
+        894921
+        789892
+        896789
+    "};
+    let map = parse_input(&input);
+
+    assert_eq!(fill_basin(&map, &mut Vec::<(usize, usize)>::new(), 5, 0), 9);
+}
 
 #[test]
 fn test_parts() {
