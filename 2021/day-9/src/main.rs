@@ -1,4 +1,4 @@
-use itertools::Itertools;
+use itertools::{iproduct, Itertools};
 
 fn main() {
     let input = include_str!("input").to_string();
@@ -7,15 +7,11 @@ fn main() {
     dbg!(assert_eq!(part_two(&input), 1263735));
 }
 
-fn parse_input(input: &str) -> Vec<Vec<usize>> {
+fn parse_input(input: &str) -> Vec<Vec<u8>> {
     input
         .lines()
         .map(&str::chars)
-        .map(|chars| {
-            chars
-                .map(|ch| ch.to_string().parse::<usize>().unwrap())
-                .collect_vec()
-        })
+        .map(|chars| chars.map(|ch| (ch as u8) - b'0').collect())
         .collect_vec()
 }
 
@@ -25,7 +21,7 @@ fn part_one(input: &str) -> usize {
     find_low_points(&lines)
         .iter()
         .map(|(x, y)| lines.get(*y).unwrap().get(*x).unwrap())
-        .fold(0, |a, n| a + n + 1)
+        .fold(0, |a, n| a + (*n as usize) + 1)
 }
 
 fn get_neighbours(x: usize, y: usize, width: usize, height: usize) -> Vec<(usize, usize)> {
@@ -46,12 +42,11 @@ fn get_neighbours(x: usize, y: usize, width: usize, height: usize) -> Vec<(usize
     .collect_vec()
 }
 
-fn find_low_points(map: &Vec<Vec<usize>>) -> Vec<(usize, usize)> {
+fn find_low_points(map: &[Vec<u8>]) -> Vec<(usize, usize)> {
     let width = map[0].len(); // TODO: Better way to get width
     let height = map.len();
 
-    (0..height)
-        .cartesian_product(0..width)
+    iproduct!(0..height, 0..width)
         .filter(|&(y, x)| {
             get_neighbours(x, y, width, height)
                 .into_iter()
@@ -62,7 +57,7 @@ fn find_low_points(map: &Vec<Vec<usize>>) -> Vec<(usize, usize)> {
 }
 
 fn fill_basin(
-    map: &Vec<Vec<usize>>,
+    map: &[Vec<u8>],
     visited: &mut Vec<(usize, usize)>,
     start_x: usize,
     start_y: usize,
@@ -80,7 +75,7 @@ fn fill_basin(
     get_neighbours(start_x, start_y, width, height)
         .into_iter()
         .filter(|&(x, y)| map[y][x] > n && map[y][x] != 9)
-        .fold(1, |a, (x, y)| a + fill_basin(&map, visited, x, y))
+        .fold(1, |a, (x, y)| a + fill_basin(map, visited, x, y))
 }
 
 fn part_two(input: &str) -> usize {
@@ -106,7 +101,7 @@ fn test_fill_basin() {
         789892
         896789
     "};
-    let map = parse_input(&input);
+    let map = parse_input(input);
 
     assert_eq!(fill_basin(&map, &mut Vec::<(usize, usize)>::new(), 5, 0), 9);
 }
@@ -122,7 +117,7 @@ fn test_find_low_points() {
         210
         921
     "};
-    let map = parse_input(&input);
+    let map = parse_input(input);
 
     assert_eq!(find_low_points(&map), vec![(2, 0)]);
 }

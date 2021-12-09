@@ -51,16 +51,6 @@ fn part_two(input: &str, simulation_days: usize) -> usize {
 
         days[6] += spawning;
         days[8] = spawning;
-
-        // println!(
-        //     "After {:2} days: {}. Spawned: {}",
-        //     sim_day,
-        //     days.iter()
-        //         .enumerate()
-        //         .flat_map(|(i, d)| if *d > 0 { vec![i; *d] } else { vec![] })
-        //         .join(","),
-        //     spawning,
-        // );
     }
 
     days.iter().sum()
