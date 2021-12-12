@@ -4,8 +4,8 @@ use std::collections::HashMap;
 fn main() {
     let input = include_str!("input").to_string();
 
-    dbg!(assert_eq!(part_one(&input), 111));
-    dbg!(assert_eq!(part_two(&input), 222));
+    dbg!(assert_eq!(part_one(&input), 3708));
+    // dbg!(assert_eq!(part_two(&input), 0));
 }
 
 fn part_one(input: &str) -> usize {
@@ -18,12 +18,12 @@ fn part_one(input: &str) -> usize {
 fn traverse<'a>(graph: &Graph, current_name: &'a String, visited: &mut Vec<&'a String>) -> usize {
     let mut paths = 0;
 
-    println!("Visiting {}", current_name);
+    // println!("Visiting {}", current_name);
 
     visited.push(current_name);
 
     if current_name == "end" {
-        dbg!(visited.iter().join(","));
+        println!("Found path to end: {}", visited.iter().join(","));
         return 1;
     }
 
@@ -32,9 +32,16 @@ fn traverse<'a>(graph: &Graph, current_name: &'a String, visited: &mut Vec<&'a S
     for neighbour_name in &current_node.connections {
         let neighbour_node = graph.find(neighbour_name);
 
+        println!(
+            "Current: {}, Neighbour: {}, Visited: {}",
+            current_name,
+            neighbour_name,
+            visited.iter().join(",")
+        );
+
         // Don't traverse past small nodes that have been visited
         if !neighbour_node.is_large && visited.contains(&neighbour_name) {
-            return 0;
+            continue;
         }
 
         paths += traverse(graph, neighbour_name, &mut visited.clone());
@@ -43,9 +50,9 @@ fn traverse<'a>(graph: &Graph, current_name: &'a String, visited: &mut Vec<&'a S
     paths
 }
 
-fn part_two(input: &str) -> usize {
-    0
-}
+// fn part_two(input: &str) -> usize {
+//     0
+// }
 
 #[derive(Hash, Debug)]
 struct Cave {
@@ -84,7 +91,9 @@ impl Graph {
             .entry(to.to_owned())
             .or_insert_with(|| Cave::new(to.to_owned()));
 
-        to_cave.connections.push(from.to_owned());
+        if from != "start" && to != "end" {
+            to_cave.connections.push(from.to_owned());
+        }
     }
 
     fn find(&self, name: &str) -> &Cave {
@@ -148,6 +157,7 @@ mod tests {
         assert_eq!(graph.caves["b"].connections, vec!["d", "end"]);
     }
 
+    #[test]
     fn test_traverse_medium() {
         let graph = parse_input(indoc! {"
             dc-end
