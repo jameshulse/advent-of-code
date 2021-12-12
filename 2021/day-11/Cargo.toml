@@ -1,0 +1,11 @@
+[package]
+name = "day-11"
+version = "0.1.0"
+edition = "2021"
+
+[profile.dev]
+overflow-checks = false
+
+[dependencies]
+indoc = "1.0.3"
+itertools = "0.10.3"
