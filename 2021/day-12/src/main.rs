@@ -5,25 +5,28 @@ fn main() {
     let input = include_str!("input").to_string();
 
     dbg!(assert_eq!(part_one(&input), 3708));
-    // dbg!(assert_eq!(part_two(&input), 0));
+    dbg!(assert_eq!(part_two(&input), 0));
 }
 
 fn part_one(input: &str) -> usize {
     let graph = parse_input(input);
 
-    traverse(&graph, &"start".to_owned(), &mut vec![])
+    traverse(&graph, &"start".to_owned(), &mut vec![], false)
 }
 
 // Recurse through cave
-fn traverse<'a>(graph: &Graph, current_name: &'a String, visited: &mut Vec<&'a String>) -> usize {
+fn traverse<'a>(
+    graph: &Graph,
+    current_name: &'a String,
+    visited: &mut Vec<&'a String>,
+    advanced_visiting: bool,
+) -> usize {
     let mut paths = 0;
-
-    // println!("Visiting {}", current_name);
 
     visited.push(current_name);
 
     if current_name == "end" {
-        println!("Found path to end: {}", visited.iter().join(","));
+        // println!("Found path to end: {}", visited.iter().join(","));
         return 1;
     }
 
@@ -32,27 +35,47 @@ fn traverse<'a>(graph: &Graph, current_name: &'a String, visited: &mut Vec<&'a S
     for neighbour_name in &current_node.connections {
         let neighbour_node = graph.find(neighbour_name);
 
-        println!(
-            "Current: {}, Neighbour: {}, Visited: {}",
-            current_name,
-            neighbour_name,
-            visited.iter().join(",")
-        );
+        if !neighbour_node.is_large {
+            if advanced_visiting {
+                // Advanced rules: can visit 1 small cave twice
+                let twice_visited = visited
+                    .iter()
+                    .unique()
+                    .filter_map(|&v| {
+                        if v.to_lowercase() == *v {
+                            Some(v)
+                        } else {
+                            None
+                        }
+                    })
+                    .map(|v| visited.iter().filter(|&&v2| v2 == v).count())
+                    .any(|c| c > 1);
 
-        // Don't traverse past small nodes that have been visited
-        if !neighbour_node.is_large && visited.contains(&neighbour_name) {
-            continue;
+                if twice_visited && visited.contains(&neighbour_name) {
+                    continue;
+                }
+            } else if visited.contains(&neighbour_name) {
+                // Basic rules: can't visit the same small node twice
+                continue;
+            }
         }
 
-        paths += traverse(graph, neighbour_name, &mut visited.clone());
+        paths += traverse(
+            graph,
+            neighbour_name,
+            &mut visited.clone(),
+            advanced_visiting,
+        );
     }
 
     paths
 }
 
-// fn part_two(input: &str) -> usize {
-//     0
-// }
+fn part_two(input: &str) -> usize {
+    let graph = parse_input(input);
+
+    traverse(&graph, &"start".to_owned(), &mut vec![], true)
+}
 
 #[derive(Hash, Debug)]
 struct Cave {
@@ -79,20 +102,22 @@ struct Graph {
 }
 
 impl Graph {
-    fn add_edge(&mut self, from: &str, to: &str) {
+    fn add_edge(&mut self, left: &str, right: &str) {
         let caves = &mut self.caves;
-        let from_cave = caves
-            .entry(from.to_owned())
-            .or_insert_with(|| Cave::new(from.to_owned()));
+        let left_cave = caves
+            .entry(left.to_owned())
+            .or_insert_with(|| Cave::new(left.to_owned()));
 
-        from_cave.connections.push(to.to_owned());
+        if right != "start" {
+            left_cave.connections.push(right.to_owned());
+        }
 
-        let to_cave = caves
-            .entry(to.to_owned())
-            .or_insert_with(|| Cave::new(to.to_owned()));
+        let right_cave = caves
+            .entry(right.to_owned())
+            .or_insert_with(|| Cave::new(right.to_owned()));
 
-        if from != "start" && to != "end" {
-            to_cave.connections.push(from.to_owned());
+        if left != "start" {
+            right_cave.connections.push(left.to_owned());
         }
     }
 
@@ -137,6 +162,7 @@ mod tests {
         "};
 
         assert_eq!(part_one(input), 10);
+        assert_eq!(part_two(input), 36);
     }
 
     #[test]
@@ -154,12 +180,12 @@ mod tests {
         assert_eq!(graph.caves.len(), 6);
         assert_eq!(graph.caves["start"].connections, vec!["A", "b"]);
         assert_eq!(graph.caves["A"].connections, vec!["c", "b", "end"]);
-        assert_eq!(graph.caves["b"].connections, vec!["d", "end"]);
+        assert_eq!(graph.caves["b"].connections, vec!["A", "d", "end"]);
     }
 
     #[test]
     fn test_traverse_medium() {
-        let graph = parse_input(indoc! {"
+        let input = indoc! {"
             dc-end
             HN-start
             start-kj
@@ -170,14 +196,15 @@ mod tests {
             kj-sa
             kj-HN
             kj-dc
-        "});
+        "};
 
-        assert_eq!(traverse(&graph, &"start".to_string(), &mut vec![]), 19);
+        assert_eq!(part_one(input), 19);
+        assert_eq!(part_two(input), 103);
     }
 
     #[test]
     fn test_traverse_large() {
-        let graph = parse_input(indoc! {"
+        let input = indoc! {"
             fs-end
             he-DX
             fs-he
@@ -196,8 +223,9 @@ mod tests {
             zg-he
             pj-fs
             start-RW
-        "});
+        "};
 
-        assert_eq!(traverse(&graph, &"start".to_string(), &mut vec![]), 226);
+        assert_eq!(part_one(input), 226);
+        assert_eq!(part_two(input), 3509);
     }
 }
