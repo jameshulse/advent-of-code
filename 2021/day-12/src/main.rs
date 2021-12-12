@@ -2,16 +2,13 @@ use itertools::Itertools;
 use std::collections::HashMap;
 
 fn main() {
-    let input = include_str!("input").to_string();
+    let graph = parse_input(include_str!("input"));
 
-    dbg!(assert_eq!(part_one(&input), 3708));
-    dbg!(assert_eq!(part_two(&input), 93858));
-}
+    let part_one = traverse(&graph, &"start".to_owned(), &mut vec![], false);
+    let part_two = traverse(&graph, &"start".to_owned(), &mut vec![], true);
 
-fn part_one(input: &str) -> usize {
-    let graph = parse_input(input);
-
-    traverse(&graph, &"start".to_owned(), &mut vec![], false)
+    dbg!(assert_eq!(part_one, 3708));
+    dbg!(assert_eq!(part_two, 93858));
 }
 
 // Recurse through cave
@@ -21,7 +18,7 @@ fn traverse<'a>(
     visited: &mut Vec<&'a String>,
     advanced_visiting: bool,
 ) -> usize {
-    let mut paths = 0;
+    let mut path_count = 0;
     let current_node = graph.find(current_name);
 
     // Check small cave rules
@@ -46,29 +43,18 @@ fn traverse<'a>(
         }
     }
 
-    // Visit node and traverse neighbours
     visited.push(current_name);
 
     if current_name == "end" {
         return 1;
     }
 
-    for neighbour_name in &current_node.connections {
-        paths += traverse(
-            graph,
-            neighbour_name,
-            &mut visited.clone(),
-            advanced_visiting,
-        );
+    // Traverse neighbours
+    for neighbour in &current_node.connections {
+        path_count += traverse(graph, neighbour, &mut visited.clone(), advanced_visiting);
     }
 
-    paths
-}
-
-fn part_two(input: &str) -> usize {
-    let graph = parse_input(input);
-
-    traverse(&graph, &"start".to_owned(), &mut vec![], true)
+    path_count
 }
 
 #[derive(Hash, Debug)]
@@ -145,22 +131,6 @@ mod tests {
     use indoc::indoc;
 
     #[test]
-    fn test_parts() {
-        let input = indoc! {"
-            start-A
-            start-b
-            A-c
-            A-b
-            b-d
-            A-end
-            b-end
-        "};
-
-        assert_eq!(part_one(input), 10);
-        assert_eq!(part_two(input), 36);
-    }
-
-    #[test]
     fn test_parse_input() {
         let graph = parse_input(indoc! {"
             start-A
@@ -179,8 +149,30 @@ mod tests {
     }
 
     #[test]
+    fn test_traverse_small() {
+        let graph = parse_input(indoc! {"
+            start-A
+            start-b
+            A-c
+            A-b
+            b-d
+            A-end
+            b-end
+        "});
+
+        assert_eq!(
+            traverse(&graph, &"start".to_string(), &mut vec![], false),
+            10
+        );
+        assert_eq!(
+            traverse(&graph, &"start".to_string(), &mut vec![], true),
+            36
+        );
+    }
+
+    #[test]
     fn test_traverse_medium() {
-        let input = indoc! {"
+        let graph = parse_input(indoc! {"
             dc-end
             HN-start
             start-kj
@@ -191,15 +183,21 @@ mod tests {
             kj-sa
             kj-HN
             kj-dc
-        "};
+        "});
 
-        assert_eq!(part_one(input), 19);
-        assert_eq!(part_two(input), 103);
+        assert_eq!(
+            traverse(&graph, &"start".to_string(), &mut vec![], false),
+            19
+        );
+        assert_eq!(
+            traverse(&graph, &"start".to_string(), &mut vec![], true),
+            103
+        );
     }
 
     #[test]
     fn test_traverse_large() {
-        let input = indoc! {"
+        let graph = parse_input(indoc! {"
             fs-end
             he-DX
             fs-he
@@ -218,9 +216,15 @@ mod tests {
             zg-he
             pj-fs
             start-RW
-        "};
+        "});
 
-        assert_eq!(part_one(input), 226);
-        assert_eq!(part_two(input), 3509);
+        assert_eq!(
+            traverse(&graph, &"start".to_string(), &mut vec![], false),
+            226
+        );
+        assert_eq!(
+            traverse(&graph, &"start".to_string(), &mut vec![], true),
+            3509
+        );
     }
 }
