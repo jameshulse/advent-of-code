@@ -5,7 +5,7 @@ fn main() {
     let input = include_str!("input").to_string();
 
     dbg!(assert_eq!(part_one(&input), 3708));
-    dbg!(assert_eq!(part_two(&input), 0));
+    dbg!(assert_eq!(part_two(&input), 93858));
 }
 
 fn part_one(input: &str) -> usize {
@@ -22,44 +22,38 @@ fn traverse<'a>(
     advanced_visiting: bool,
 ) -> usize {
     let mut paths = 0;
+    let current_node = graph.find(current_name);
 
+    // Check small cave rules
+    if !advanced_visiting && !current_node.is_large && visited.contains(&current_name) {
+        return 0; // Don't visit the same small node twice (simple)
+    } else if advanced_visiting && !current_node.is_large {
+        let twice_visited = visited
+            .iter()
+            .unique()
+            .filter_map(|&v| {
+                if v.to_lowercase() == *v {
+                    Some(v)
+                } else {
+                    None
+                }
+            })
+            .map(|v| visited.iter().filter(|&&v2| v2 == v).count())
+            .any(|c| c > 1);
+
+        if twice_visited && visited.contains(&current_name) {
+            return 0;
+        }
+    }
+
+    // Visit node and traverse neighbours
     visited.push(current_name);
 
     if current_name == "end" {
-        // println!("Found path to end: {}", visited.iter().join(","));
         return 1;
     }
 
-    let current_node = graph.find(current_name);
-
     for neighbour_name in &current_node.connections {
-        let neighbour_node = graph.find(neighbour_name);
-
-        if !neighbour_node.is_large {
-            if advanced_visiting {
-                // Advanced rules: can visit 1 small cave twice
-                let twice_visited = visited
-                    .iter()
-                    .unique()
-                    .filter_map(|&v| {
-                        if v.to_lowercase() == *v {
-                            Some(v)
-                        } else {
-                            None
-                        }
-                    })
-                    .map(|v| visited.iter().filter(|&&v2| v2 == v).count())
-                    .any(|c| c > 1);
-
-                if twice_visited && visited.contains(&neighbour_name) {
-                    continue;
-                }
-            } else if visited.contains(&neighbour_name) {
-                // Basic rules: can't visit the same small node twice
-                continue;
-            }
-        }
-
         paths += traverse(
             graph,
             neighbour_name,
@@ -103,8 +97,8 @@ struct Graph {
 
 impl Graph {
     fn add_edge(&mut self, left: &str, right: &str) {
-        let caves = &mut self.caves;
-        let left_cave = caves
+        let left_cave = self
+            .caves
             .entry(left.to_owned())
             .or_insert_with(|| Cave::new(left.to_owned()));
 
@@ -112,7 +106,8 @@ impl Graph {
             left_cave.connections.push(right.to_owned());
         }
 
-        let right_cave = caves
+        let right_cave = self
+            .caves
             .entry(right.to_owned())
             .or_insert_with(|| Cave::new(right.to_owned()));
 
