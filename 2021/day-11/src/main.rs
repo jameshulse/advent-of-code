@@ -6,7 +6,7 @@ fn main() {
     let input = include_str!("input").to_string();
 
     dbg!(assert_eq!(part_one(&input), 1627));
-    dbg!(assert_eq!(part_two(&input), 0));
+    dbg!(assert_eq!(part_two(&input), 329));
 }
 
 fn part_one(input: &str) -> usize {
@@ -62,10 +62,6 @@ impl Cavern {
     }
 
     fn get_mut(&mut self, x: usize, y: usize) -> &mut Octopus {
-        if x >= self.width || y >= self.height {
-            dbg!((x, y));
-        }
-
         &mut self.data[y][x]
     }
 
@@ -84,7 +80,6 @@ impl Cavern {
             (x > 0, (x - 1, y)),                           // left
         ]
         .iter()
-        // .flat_map(|(p, (x, y))| if *p { Some(self.get(*x, *y)) } else { None })
         .flat_map(|(p, (x, y))| if *p { Some((*x, *y)) } else { None })
         .collect_vec()
     }
