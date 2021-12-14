@@ -5,7 +5,7 @@ fn main() {
     let input = include_str!("input");
 
     dbg!(assert_eq!(part_one(input), 2068));
-    dbg!(assert_eq!(part_two(input), 0));
+    dbg!(assert_eq!(part_two(input), 2158894777814));
 }
 
 type Rules = HashMap<String, String>;
@@ -61,17 +61,12 @@ fn grow_simple(polymer: String, rules: &Rules) -> String {
 // Let's get smarter...
 fn part_two(input: &str) -> usize {
     let (template, rules) = parse_input(input);
-
-    println!("Template:      {}", template);
-
     let mut pair_counts = template
         .chars()
         .tuple_windows()
         .counts_by(|(l, r)| format!("{}{}", l, r));
 
-    let mut letter_counts: HashMap<char, usize> = HashMap::new();
-
-    for i in 1..=10 {
+    for i in 1..=40 {
         println!("Iteration: {:2}", i);
 
         for (pair, count) in pair_counts.clone() {
@@ -86,16 +81,6 @@ fn part_two(input: &str) -> usize {
                     let pair_l = pair.chars().nth(0).unwrap();
                     let pair_r = pair.chars().nth(1).unwrap();
 
-                    println!(
-                        "Pair: {} x {:3} ({},{}) -> {}",
-                        pair, count, pair_l, pair_r, ch
-                    );
-
-                    // Update letter counts to aid with result
-                    *letter_counts.entry(pair_l).or_insert(0) += count;
-                    *letter_counts.entry(pair_r).or_insert(0) += count;
-                    *letter_counts.entry(ch).or_insert(0) += count;
-
                     // Update pair counts
                     *pair_counts.entry(format!("{}{}", pair_l, ch)).or_insert(0) += count;
                     *pair_counts.entry(format!("{}{}", ch, pair_r)).or_insert(0) += count;
@@ -105,11 +90,23 @@ fn part_two(input: &str) -> usize {
         }
     }
 
-    dbg!(&letter_counts);
+    // Count only left instances in pair counts, and add +1 for last letter of original template
+    let mut letter_counts: HashMap<String, usize> = HashMap::new();
 
-    // TODO: Find highest + lowest letter counts
+    for (pair, count) in pair_counts.clone() {
+        let pair_l = pair.chars().next().unwrap();
 
-    0
+        *letter_counts.entry(pair_l.to_string()).or_insert(0) += count;
+    }
+
+    *letter_counts
+        .entry(template.chars().last().unwrap().to_string())
+        .or_insert(0) += 1;
+
+    let highest_count = letter_counts.iter().max_by(|l, r| l.1.cmp(r.1)).unwrap();
+    let lowest_count = letter_counts.iter().min_by(|l, r| l.1.cmp(r.1)).unwrap();
+
+    highest_count.1 - lowest_count.1
 }
 
 #[cfg(test)]
