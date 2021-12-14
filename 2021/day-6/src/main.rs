@@ -3,8 +3,8 @@ use itertools::Itertools;
 fn main() {
     let input = include_str!("input").to_string();
 
-    dbg!(part_one(&input, 80));
-    dbg!(part_two(&input, 256));
+    dbg!(assert_eq!(part_one(&input, 80), 362666));
+    dbg!(assert_eq!(part_two(&input, 256), 1640526601595));
 }
 
 // Naive solution
@@ -16,7 +16,7 @@ fn part_one(input: &str, simulation_days: usize) -> usize {
     for _ in 1..=simulation_days {
         let mut new_fish: Vec<u8> = vec![];
 
-        for fish in all_fish.iter_mut() {
+        for fish in &mut all_fish {
             if *fish == 0 {
                 new_fish.push(8);
 

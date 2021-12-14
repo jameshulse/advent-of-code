@@ -9,11 +9,11 @@ struct Point {
 }
 
 impl Point {
-    fn from_coords(coords: String) -> Point {
+    fn from_coords(coords: String) -> Self {
         coords
             .split_once(',')
             .map(|(a, b)| (a.parse().unwrap(), b.parse().unwrap()))
-            .map(|(x, y)| Point { x, y })
+            .map(|(x, y)| Self { x, y })
             .unwrap()
     }
 }

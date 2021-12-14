@@ -8,7 +8,7 @@ fn main() {
     dbg!(assert_eq!(part_two(entries), 0));
 }
 
-fn part_one(entries: &Vec<Entry>) -> usize {
+fn part_one(entries: &[Entry]) -> usize {
     let unique_sizes = [2, 3, 4, 7];
 
     entries
@@ -22,7 +22,7 @@ fn part_one(entries: &Vec<Entry>) -> usize {
         .sum()
 }
 
-fn part_two(entries: &Vec<Entry>) -> usize {
+fn part_two(entries: &[Entry]) -> usize {
     let mut output_sum = 0;
 
     for entry in entries {
@@ -165,8 +165,6 @@ fn solve_mappings(entry: &Entry) -> HashMap<String, String> {
 
     let solved_g = triple_chars[0].to_string();
 
-    // mappings.insert(triple_chars[0].to_string(), "g".to_string());
-
     // Solve for "c" -> Take 6 digit, remove 'd' and find letter occurring twice
     let len_six = entry.input.iter().filter(|e| e.len() == 6).collect_vec();
 
@@ -189,26 +187,24 @@ fn solve_mappings(entry: &Entry) -> HashMap<String, String> {
 
     let solved_c = double_chars[0].to_string();
 
-    // mappings.insert(double_chars[0].to_string(), "c".to_string());
-
     // Solve for "f" -> Remove 'c' from 1
     let solved_f = one.replace(&solved_c, "");
 
     let mut mappings: HashMap<String, String> = HashMap::new();
 
-    mappings.insert(solved_a.to_string(), "a".to_string());
-    mappings.insert(solved_b.to_string(), "b".to_string());
-    mappings.insert(solved_c.to_string(), "c".to_string());
-    mappings.insert(solved_d.to_string(), "d".to_string());
-    mappings.insert(solved_e.to_string(), "e".to_string());
-    mappings.insert(solved_f.to_string(), "f".to_string());
-    mappings.insert(solved_g.to_string(), "g".to_string());
+    mappings.insert(solved_a, "a".to_string());
+    mappings.insert(solved_b, "b".to_string());
+    mappings.insert(solved_c, "c".to_string());
+    mappings.insert(solved_d, "d".to_string());
+    mappings.insert(solved_e, "e".to_string());
+    mappings.insert(solved_f, "f".to_string());
+    mappings.insert(solved_g, "g".to_string());
 
     mappings
 }
 
 // bcdef -[map]> fgabd -[sort]> abdfg -[match]> "5"
-fn resolve_output(mappings: &HashMap<String, String>, output: &Vec<String>) -> usize {
+fn resolve_output(mappings: &HashMap<String, String>, output: &[String]) -> usize {
     let mut out_str: String = "".to_string();
 
     for unmapped in output {

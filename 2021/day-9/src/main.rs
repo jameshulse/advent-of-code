@@ -4,7 +4,7 @@ fn main() {
     let input = include_str!("input").to_string();
 
     dbg!(assert_eq!(part_one(&input), 452));
-    dbg!(assert_eq!(part_two(&input), 1263735));
+    dbg!(assert_eq!(part_two(&input), 1_263_735));
 }
 
 fn parse_input(input: &str) -> Vec<Vec<u8>> {
@@ -26,10 +26,10 @@ fn part_one(input: &str) -> usize {
 
 fn get_neighbours(x: usize, y: usize, width: usize, height: usize) -> Vec<(usize, usize)> {
     [
-        (x > 0, ((x as isize) - 1, (y as isize))),
-        (x < width - 1, ((x as isize) + 1, (y as isize))),
-        (y > 0, ((x as isize), (y as isize) - 1)),
-        (y < height - 1, ((x as isize), (y as isize) + 1)),
+        (x > 0, (x - 1, y)),
+        (x < width - 1, (x + 1, y)),
+        (y > 0, (x, y - 1)),
+        (y < height - 1, (x, y + 1)),
     ]
     .into_iter()
     .filter_map(|(cond, val)| {

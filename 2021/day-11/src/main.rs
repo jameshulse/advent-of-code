@@ -80,7 +80,7 @@ impl Cavern {
             (x > 0, (x - 1, y)),                           // left
         ]
         .iter()
-        .flat_map(|(p, (x, y))| if *p { Some((*x, *y)) } else { None })
+        .filter_map(|(p, (x, y))| if *p { Some((*x, *y)) } else { None })
         .collect_vec()
     }
 }
@@ -142,7 +142,7 @@ fn simulate_step(map: &mut Cavern) -> usize {
     while let Some((x, y)) = flashing.pop_back() {
         let octo = map.get(x, y);
 
-        for &mut (nx, ny) in map.find_neighbours(octo).iter_mut() {
+        for &mut (nx, ny) in &mut map.find_neighbours(octo) {
             let neighbour = map.get_mut(nx, ny);
 
             if neighbour.energy == 0 {
@@ -159,6 +159,7 @@ fn simulate_step(map: &mut Cavern) -> usize {
     flashes
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     use indoc::indoc;

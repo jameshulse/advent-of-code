@@ -1,12 +1,11 @@
 use itertools::Itertools;
 use std::collections::HashMap;
-use std::collections::VecDeque;
 
 fn main() {
     let input = include_str!("input").to_string();
 
-    dbg!(assert_eq!(part_one(&input), 370407));
-    dbg!(assert_eq!(part_two(&input), 3249889609));
+    dbg!(assert_eq!(part_one(&input), 370_407));
+    dbg!(assert_eq!(part_two(&input), 3_249_889_609));
 }
 
 #[derive(PartialEq, Debug)]
@@ -18,13 +17,13 @@ enum LineState {
 
 fn check_line(line: &str) -> LineState {
     let pairs = HashMap::from([('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')]);
-    let mut stack = VecDeque::new();
+    let mut stack = Vec::new();
 
     for ch in line.chars() {
         if pairs.contains_key(&ch) {
-            stack.push_back(ch)
+            stack.push(ch);
         } else {
-            let last = stack.pop_back().unwrap();
+            let last = stack.pop().unwrap();
             let expected = *pairs.get(&last).unwrap();
 
             if ch != expected {
@@ -79,6 +78,7 @@ fn score_string(input: &[char]) -> usize {
     input.iter().fold(0, |acc, ch| acc * 5 + scores[ch])
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     use indoc::indoc;

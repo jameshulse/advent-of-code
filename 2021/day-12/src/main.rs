@@ -65,10 +65,10 @@ struct Cave {
 }
 
 impl Cave {
-    fn new(name: String) -> Cave {
+    fn new(name: String) -> Self {
         let is_large = name != "start" && name != "end" && name.to_ascii_uppercase() == name;
 
-        Cave {
+        Self {
             name,
             is_large,
             connections: vec![],
@@ -106,8 +106,8 @@ impl Graph {
         &self.caves[name]
     }
 
-    fn new() -> Graph {
-        Graph {
+    fn new() -> Self {
+        Self {
             caves: HashMap::new(),
         }
     }
@@ -126,6 +126,7 @@ fn parse_input(input: &str) -> Graph {
     graph
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     use indoc::indoc;
