@@ -30,7 +30,7 @@ fn part_one(input: &str) -> usize {
 
     println!("Template:      {}", template);
 
-    let result = (1..=10).fold(template.to_owned(), |p, _| grow(p, &rules));
+    let result = (1..=10).fold(template.to_owned(), |p, _| grow_simple(p, &rules));
 
     let letters = result.chars().counts_by(|ch| ch);
     let most_common = letters.iter().max_by(|a, b| a.1.cmp(b.1)).unwrap();
@@ -39,33 +39,11 @@ fn part_one(input: &str) -> usize {
     most_common.1 - least_common.1
 }
 
-// Let's get smarter...
-fn part_two(input: &str) -> usize {
-    let (template, rules) = parse_input(input);
-
-    println!("Template:      {}", template);
-
-    let result = (1..=40).fold(template.to_owned(), |p, i| {
-        println!("Iter {}", i);
-
-        grow(p, &rules)
-    });
-
-    let letters = result.chars().counts_by(|ch| ch);
-    let most_common = letters.iter().max_by(|a, b| a.1.cmp(b.1)).unwrap();
-    let least_common = letters.iter().min_by(|a, b| a.1.cmp(b.1)).unwrap();
-
-    most_common.1 - least_common.1
-}
-
-fn grow(polymer: String, rules: &Rules) -> String {
-    // dbg!(&polymer.chars().tuple_windows().collect::<Vec<(_, _)>>());
-
+fn grow_simple(polymer: String, rules: &Rules) -> String {
     let mut result = polymer
         .chars()
         .tuple_windows()
         .map(|(l, r)| {
-            // TODO: Easier way to combine two chars?
             let pair = format!("{}{}", l, r);
 
             match rules.get(&pair) {
@@ -80,9 +58,59 @@ fn grow(polymer: String, rules: &Rules) -> String {
     result
 }
 
-// fn part_two() {
+// Let's get smarter...
+fn part_two(input: &str) -> usize {
+    let (template, rules) = parse_input(input);
 
-// }
+    println!("Template:      {}", template);
+
+    let mut pair_counts = template
+        .chars()
+        .tuple_windows()
+        .counts_by(|(l, r)| format!("{}{}", l, r));
+
+    let mut letter_counts: HashMap<char, usize> = HashMap::new();
+
+    for i in 1..=10 {
+        println!("Iteration: {:2}", i);
+
+        for (pair, count) in pair_counts.clone() {
+            if count == 0 {
+                continue;
+            }
+
+            *pair_counts.entry(pair.clone()).or_insert(1) -= count; // Remove current pair
+
+            match rules.get(&pair.clone()) {
+                Some(ch) => {
+                    let pair_l = pair.chars().nth(0).unwrap();
+                    let pair_r = pair.chars().nth(1).unwrap();
+
+                    println!(
+                        "Pair: {} x {:3} ({},{}) -> {}",
+                        pair, count, pair_l, pair_r, ch
+                    );
+
+                    // Update letter counts to aid with result
+                    *letter_counts.entry(pair_l).or_insert(0) += count;
+                    *letter_counts.entry(pair_r).or_insert(0) += count;
+                    *letter_counts.entry(ch).or_insert(0) += count;
+
+                    // Update pair counts
+                    *pair_counts.entry(format!("{}{}", pair_l, ch)).or_insert(0) += count;
+                    *pair_counts.entry(format!("{}{}", ch, pair_r)).or_insert(0) += count;
+                }
+                None => continue,
+            }
+        }
+    }
+
+    dbg!(&letter_counts);
+
+    // TODO: Find highest + lowest letter counts
+
+    0
+}
 
 #[cfg(test)]
 mod tests {
@@ -114,25 +142,21 @@ mod tests {
 
         let (template, rules) = parse_input(input);
 
-        let polymer = grow(template.to_string(), &rules);
-
+        let polymer = grow_simple(template.to_string(), &rules);
         assert_eq!(polymer, "NCNBCHB");
 
-        let polymer = grow(polymer, &rules);
-
+        let polymer = grow_simple(polymer, &rules);
         assert_eq!(polymer, "NBCCNBBBCBHCB");
 
-        let polymer = grow(polymer, &rules);
-
+        let polymer = grow_simple(polymer, &rules);
         assert_eq!(polymer, "NBBBCNCCNBBNBNBBCHBHHBCHB");
 
-        let polymer = grow(polymer, &rules);
-
+        let polymer = grow_simple(polymer, &rules);
         assert_eq!(polymer, "NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB");
     }
 
     #[test]
-    fn test_part_one() {
+    fn test_parts() {
         let input = indoc! {"
             NNCB
 
@@ -155,5 +179,6 @@ mod tests {
         "};
 
         assert_eq!(part_one(input), 1588);
+        assert_eq!(part_two(input), 2188189693529);
     }
 }
