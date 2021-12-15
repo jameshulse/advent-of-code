@@ -66,9 +66,8 @@ fn part_two(input: &str) -> usize {
         .tuple_windows()
         .counts_by(|(l, r)| format!("{}{}", l, r));
 
-    for i in 1..=40 {
-        println!("Iteration: {:2}", i);
-
+    // Simulate growth
+    for _ in 1..=40 {
         for (pair, count) in pair_counts.clone() {
             if count == 0 {
                 continue;
