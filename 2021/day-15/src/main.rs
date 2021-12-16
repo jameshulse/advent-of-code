@@ -55,16 +55,11 @@ fn get_risk_with_growth(cavern: &Cavern, x: usize, y: usize, ) -> usize {
 
     let mapped_y = y % cavern.len();
     let mapped_x = x % cavern.len();
-    
-    // dbg!(cavern.len(), x, y, mapped_x, mapped_y);
-    // dbg!(cavern);
 
     let original_risk = cavern[mapped_y][mapped_x];
     let distance: usize = y / cavern.len() + x / cavern.len();
 
-    // dbg!(original_risk, distance);
-
-    cmp::max(1, (original_risk + distance) % MAX_RISK)
+    if (original_risk + distance) % MAX_RISK == 0 { 9 } else { (original_risk + distance) % MAX_RISK }
 }
 
 fn part_two(input: &str) -> usize {
@@ -73,6 +68,8 @@ fn part_two(input: &str) -> usize {
     let cavern = parse_input(input);
     let start = (0, 0);
     let end = (cavern.len() * GROWTH_FACTOR - 1, cavern.len() * GROWTH_FACTOR - 1);
+
+    dbg!(end);
 
     let shortest_path = dijkstra(
         &start,
@@ -96,6 +93,8 @@ fn part_two(input: &str) -> usize {
         |&n| n == end,
     );
 
+    dbg!(&shortest_path);
+
     shortest_path.unwrap().1
 }
 
@@ -104,28 +103,27 @@ mod tests {
     use super::*;
     use indoc::indoc;
 
-    /**
-     891912123
-     891912123
-     891912123
-     912123234
-     912123234
-     912123234
-     123234345
-     123234345
-     123234345
-     */
-
     #[test]
     fn test_get_risk_with_growth() {
-        let cavern = vec![
-            vec![8, 9, 1],
-            vec![8, 9, 1],
-            vec![8, 9, 1]
-        ];
+        let cavern = parse_input(indoc! {"
+            1163751742
+            1381373672
+            2136511328
+            3694931569
+            7463417111
+            1319128137
+            1359912421
+            3125421639
+            1293138521
+            2311944581
+        "});
 
-        assert_eq!(get_risk_with_growth(&cavern, 4, 5), 2);
-        assert_eq!(get_risk_with_growth(&cavern, 7, 8), 4);
+        assert_eq!(get_risk_with_growth(&cavern, 10, 43), 8);
+        assert_eq!(get_risk_with_growth(&cavern, 0, 48), 5);
+        assert_eq!(get_risk_with_growth(&cavern, 29, 47), 6);
+        assert_eq!(get_risk_with_growth(&cavern, 26, 30), 6);
+
+        assert_eq!((0..50).map(|i| get_risk_with_growth(&cavern, i, 0)).join(""), "11637517422274862853338597396444961841755517295286");
     }
 
     #[test]
