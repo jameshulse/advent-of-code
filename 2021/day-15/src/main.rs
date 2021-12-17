@@ -1,12 +1,11 @@
 use itertools::Itertools;
 use pathfinding::directed::dijkstra::dijkstra;
-use std::cmp;
 
 fn main() {
     let input = include_str!("input");
 
     dbg!(assert_eq!(part_one(input), 685));
-    dbg!(assert_eq!(part_two(input), 0));
+    dbg!(assert_eq!(part_two(input), 2995));
 }
 
 type Cavern = Vec<Vec<usize>>;
