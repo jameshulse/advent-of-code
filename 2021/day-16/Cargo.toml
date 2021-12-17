@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 bit_field = "0.10.1"
+bitvec = "0.22.3"
 itertools = "0.10.3"
