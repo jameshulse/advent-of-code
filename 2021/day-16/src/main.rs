@@ -1,6 +1,9 @@
-use itertools::Itertools;
-use bit_field::{BitField};
-use bitvec::prelude::*;
+use day_16::*;
+
+// use bit_field::{BitField};
+// use bitvec::prelude::*;
+
+
 
 fn main() {
     let input = include_str!("input");
@@ -9,68 +12,57 @@ fn main() {
     // dbg!(assert_eq!(part_two(input), 2995));
 }
 
-const LITERAL: usize = 4;
-
 fn part_one(input: &str) -> usize {
-    let (version, type_id) = parse_header(input);
-
     println!("Input: {}", input);
 
-    match type_id {
-        LITERAL => println!("Parsed literal as {}", parse_literal(input)),
-        _ => panic!("Unknown packet type {}", type_id)
-    }
+    let mut versions: Vec<usize> = vec![];
+    let input = BinaryString::from_hex(input);
 
-    // Type 4 = literal value
+    // TODO: Use extract_packets
 
-    version as usize
+    versions.iter().sum()
 }
 
-fn parse_header(input: &str) -> (usize, usize) {
-    let header = parse_hex(&input[0..2]);
+// fn parse_header(input: &str) -> (usize, usize) {
+//     let header = parse_hex(&input[0..2]);
 
-    (header.get_bits(5..8), header.get_bits(2..5))
-}
+//     (header.get_bits(5..8), header.get_bits(2..5))
+// }
 
-fn parse_literal(input: &str) -> usize {
-    let literal_start = input.len() * 4 - 6;
+// fn parse_literal(input: &str) -> usize {
+//     let literal_start = input.len() * 4 - 6;
     
-    let parsed = parse_hex(input);
-    let literal_bits = BitSlice::<Msb0, _>::from_element(&parsed);
+//     let parsed = parse_hex(input);
+//     let literal_bits = BitSlice::<Msb0, _>::from_element(&parsed);
     
-    let mut result = BitVec::new();
+//     let mut result = BitVec::new();
 
-    for group in literal_bits[literal_bits.len()-literal_start..].chunks(5) {
-        let literal = &group[1..];
+//     for group in literal_bits[literal_bits.len()-literal_start..].chunks(5) {
+//         let literal = &group[1..];
 
-        result.extend(literal);
+//         result.extend(literal);
 
-        if !group[0] {
-            break
-        }
-    }
+//         if !group[0] {
+//             break
+//         }
+//     }
 
-    slice_to_num(&result)
-}
+//     slice_to_num(&result)
+// }
 
-fn slice_to_num(slice: &BitVec) -> usize {
-    slice.iter().rev().enumerate().fold(0, |r, (i, b)| {
-        r + (2_usize.pow(i as u32)) * (if *b { 1 } else { 0 })
-    })
-}
+// fn slice_to_num(slice: &BitVec) -> usize {
+//     slice.iter().rev().enumerate().fold(0, |r, (i, b)| {
+//         r + (2_usize.pow(i as u32)) * (if *b { 1 } else { 0 })
+//     })
+// }
 
-fn parse_hex(input: &str) -> usize {
-    usize::from_str_radix(input, 16).ok().unwrap()
-}
+// fn parse_hex(input: &str) -> usize {
+//     usize::from_str_radix(input, 16).ok().unwrap()
+// }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_parse_literal() {
-        assert_eq!(parse_literal("D2FE28"), 2021);
-    }
 
     #[test]
     fn test_part_one() {
