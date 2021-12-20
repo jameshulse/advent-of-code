@@ -82,24 +82,28 @@ pub fn get_sub_packets(input: &BinaryString) -> BinaryString {
 pub fn extract_packets(input: &BinaryString) -> Vec<&BinaryString> {
     let mut result: Vec<&BinaryString> = vec![];
     let BinaryString(bits) = input;
-    let mut bit_iter = bits.chars();
+    let bit_iter = &mut bits.chars();
 
-    result.push(input);
+    result.push(input); // Add outer packet
 
     loop {
-        let version = BinaryString((bit_iter.take(3).join("")).to_string()).to_num();
-        let type_id = BinaryString((bit_iter.take(3).join("")).to_string()).to_num();
+        let _version = BinaryString(bit_iter.take(3).join("").to_string()).to_num();
+        let type_id = BinaryString(bit_iter.take(3).join("").to_string()).to_num();
 
-        // let header = parse_header(&packet);
+        if type_id == 4 {
+            // Literal
+            break; 
+        }
 
-        // if header.get_type_id() == 4 {
-        //     result.push(&packet.clone());
-        //     break;
-        // }
+        let read_length = if bit_iter.take(1).join("").to_string() == "0" {
+            15
+        } else {
+            11
+        };
 
-        // let sub_packet_length = get_sub_packets(&packet);
+        let length = BinaryString(bit_iter.take(read_length).join("").to_string()).to_num();
 
-
+        
     }
 
     result
@@ -115,10 +119,10 @@ mod tests {
         assert_eq!(BinaryString::from_hex("D2FE28"), BinaryString("110100101111111000101000".to_string()));
     }
 
-    #[test]
-    fn test_parse_header() {
-        assert_eq!(parse_header(&BinaryString::from_hex("D2FE28")), PacketHeader { version: 6, type_id: 4 });
-    }
+    // #[test]
+    // fn test_parse_header() {
+    //     assert_eq!(parse_header(&BinaryString::from_hex("D2FE28")), PacketHeader { version: 6, type_id: 4 });
+    // }
 
     #[test]
     fn test_extract_literal() {
