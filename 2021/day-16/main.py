@@ -35,11 +35,6 @@ def part_one(packet: str, versions: list):
 
         part_one(packet[18:], versions)
 
-
-
-# 011 000 1 00000000010
-#                      000 000 0 000000000010110 0001000101010110001011001000100000000010000100011000111000110100
-
 # Run part 
 input = open('src/input').readline()
 versions = []
