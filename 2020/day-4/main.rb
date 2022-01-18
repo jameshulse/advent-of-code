@@ -1,18 +1,17 @@
-# input = """\
-# ecl:gry pid:860033327 eyr:2020 hcl:#fffffd
-# byr:1937 iyr:2017 cid:147 hgt:183cm
+input = """\
+pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980
+hcl:#623a2f
 
-# iyr:2013 ecl:amb cid:350 eyr:2023 pid:028048884
-# hcl:#cfa07d byr:1929
+eyr:2029 ecl:blu cid:129 byr:1989
+iyr:2014 pid:896056539 hcl:#a97842 hgt:165cm
 
-# hcl:#ae17e1 iyr:2013
-# eyr:2024
-# ecl:brn pid:760753108 byr:1931
-# hgt:179cm
+hcl:#888785
+hgt:164cm byr:2001 iyr:2015 cid:88
+pid:545766238 ecl:hzl
+eyr:2022
 
-# hcl:#cfa07d eyr:2025 pid:166559648
-# iyr:2011 ecl:brn hgt:59in
-# """
+iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719
+"""
 
 input = File.read('input')
 
@@ -25,9 +24,21 @@ def contains_all_fields(passport)
     valid
 end
 
-part_one = input.split(/(\n\n)/).each_slice(2).inject(0) { |n, p| n + (contains_all_fields(p[0]) ? 1 : 0) }
+part_one = input.split(/(\n\n)/).each_slice(2).map { |p, *| contains_all_fields(p) }.count(true)
 
-puts "Part one: %d" % part_one
+puts "Part one: %d" % [part_one]
 
 # Part 2
-puts "Part two: todo"
+def validate_passport(raw_passport)
+    passport = raw_passport.split(' ').map { |e| e.split(':') }.to_h
+
+    passport['byr'].to_i.between?(1929, 2002) \
+        && passport['iyr'].to_i.between?(2010, 2020) \
+        && passport['eyr'].to_i.between?(2020, 2030)
+
+    # todo...
+end
+
+part_two = input.split(/(\n\n)/).each_slice(2).map { |p, *| validate_passport(p) }.count(true)
+
+puts "Part two: %d" % [part_two]
