@@ -1,18 +1,37 @@
 defmodule Day2 do
-  @moduledoc """
-  Documentation for `Day2`.
-  """
+  def start(_type, _args) do
+    IO.puts(part1())
+    # IO.puts(part2)
+  end
 
-  @doc """
-  Hello world.
+  def part1 do
+    program = load_state()
 
-  ## Examples
+    program = execute_instruction(program, 0)
 
-      iex> Day2.hello()
-      :world
+    List.first(program)
+  end
 
-  """
-  def hello do
-    :world
+  def execute_instruction(program, location) do
+    case Enum.at(program, location) do
+      99 ->
+        program
+
+      1 ->
+        [left, right, output] = Enum.slice(program, (location + 1)..(location + 3))
+
+        List.replace_at(program, output, Enum.at(program, left) + Enum.at(program, right))
+
+      2 ->
+        [left, right, output] = Enum.slice(program, (location + 1)..(location + 3))
+
+        List.replace_at(program, output, Enum.at(program, left) * Enum.at(program, right))
+    end
+  end
+
+  def load_state do
+    File.read!("input")
+    |> String.split(",", trim: true)
+    |> Enum.map(&String.to_integer(&1))
   end
 end
