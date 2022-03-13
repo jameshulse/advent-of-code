@@ -1,8 +1,11 @@
 defmodule Day1 do
-  def part1 do
-    {:ok, contents} = File.read("input")
+  def start(_type, _args) do
+    IO.puts(part1)
+    IO.puts(part2)
+  end
 
-    contents
+  def part1 do
+    File.read!("input")
     |> String.split("\n", trim: true)
     |> Enum.map(&String.to_integer(&1))
     |> Enum.map(&calculate_fuel(&1))
@@ -16,9 +19,7 @@ defmodule Day1 do
   end
 
   def part2 do
-    {:ok, contents} = File.read("input")
-
-    contents
+    File.read!("input")
     |> String.split("\n", trim: true)
     |> Enum.map(&String.to_integer(&1))
     |> Enum.map(&recurse_fuel(&1))

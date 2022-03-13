@@ -5,27 +5,44 @@ defmodule Day2 do
   end
 
   def part1 do
-    program = load_state()
+    load_state()
+    |> List.replace_at(1, 12)
+    |> List.replace_at(2, 2)
+    |> execute_program()
+    |> List.first()
+  end
 
-    program = execute_instruction(program, 0)
+  def part2 do
+    load_state()
+    |> List.replace_at(1, 12)
+    |> List.replace_at(2, 2)
+    # TODO
+    |> List.first()
+  end
 
-    List.first(program)
+  def execute_program(program, location \\ 0) do
+    case execute_instruction(program, location) do
+      {:step, output} -> execute_program(output, location + 4)
+      {:exit, output} -> output
+    end
   end
 
   def execute_instruction(program, location) do
-    case Enum.at(program, location) do
-      99 ->
-        program
+    case Enum.slice(program, location..(location + 3)) do
+      [99 | _] ->
+        {:exit, program}
 
-      1 ->
-        [left, right, output] = Enum.slice(program, (location + 1)..(location + 3))
+      [1, left, right, output] ->
+        program =
+          List.replace_at(program, output, Enum.at(program, left) + Enum.at(program, right))
 
-        List.replace_at(program, output, Enum.at(program, left) + Enum.at(program, right))
+        {:step, program}
 
-      2 ->
-        [left, right, output] = Enum.slice(program, (location + 1)..(location + 3))
+      [2, left, right, output] ->
+        program =
+          List.replace_at(program, output, Enum.at(program, left) * Enum.at(program, right))
 
-        List.replace_at(program, output, Enum.at(program, left) * Enum.at(program, right))
+        {:step, program}
     end
   end
 
