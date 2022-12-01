@@ -10,17 +10,18 @@ defmodule Day1 do
   end
 
   def max_calories(lines) do
-    lines
-    |> String.split("\n\n", trim: true)
-    |> Enum.map(fn elf ->
-      String.split(elf, "\n", trim: true)
-      |> Enum.map(fn l -> String.to_integer(l) end)
-      |> Enum.sum()
-    end)
+    get_calories_per_elf(lines)
     |> Enum.max()
   end
 
   def sum_top_3(lines) do
+    get_calories_per_elf(lines)
+    |> Enum.sort(:desc)
+    |> Enum.take(3)
+    |> Enum.sum()
+  end
+
+  def get_calories_per_elf(lines) do
     lines
     |> String.split("\n\n", trim: true)
     |> Enum.map(fn elf ->
@@ -28,8 +29,5 @@ defmodule Day1 do
       |> Enum.map(fn l -> String.to_integer(l) end)
       |> Enum.sum()
     end)
-    |> Enum.sort(:desc)
-    |> Enum.take(3)
-    |> Enum.sum()
   end
 end
