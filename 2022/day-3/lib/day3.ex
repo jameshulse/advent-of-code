@@ -9,10 +9,6 @@ defmodule Day3 do
     |> Enum.sum()
   end
 
-  def part2(input) do
-    -1
-  end
-
   def find_duplicate(rucksack) do
     compartment_size = trunc(String.length(rucksack) / 2)
 
@@ -28,6 +24,23 @@ defmodule Day3 do
     unique
     |> Enum.group_by(fn x -> x end)
     |> Enum.flat_map(fn {k, v} -> if length(v) > 1, do: [k], else: [] end)
+    |> List.first()
+  end
+
+  def part2(input) do
+    input
+    |> String.split("\n", trim: true)
+    |> Enum.chunk(3)
+    |> Enum.map(&find_common(&1))
+    |> Enum.map(&priority(&1))
+    |> Enum.sum()
+  end
+
+  def find_common(rucksacks) do
+    rucksacks
+    |> Enum.map(&String.graphemes(&1))
+    |> Enum.reduce(&MapSet.intersection(MapSet.new(&1), MapSet.new(&2)))
+    |> MapSet.to_list()
     |> List.first()
   end
 

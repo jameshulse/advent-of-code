@@ -2,6 +2,15 @@ defmodule Day3Test do
   use ExUnit.Case
   doctest Day3
 
+  @test_input """
+  vJrwpWtwJgWrhcsFMMfFFhFp
+  jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+  PmmdzqPrVvPwwTWBwg
+  wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+  ttgJtRGJQctTZtZT
+  CrZsJsPPZsGzwwsLwLmpwMDw
+  """
+
   test "both parts" do
     input = File.read!("input")
 
@@ -9,25 +18,27 @@ defmodule Day3Test do
     assert Day3.part2(input) == 0
   end
 
-  test "find duplicates" do
-    assert Day3.find_duplicate("vJrwpWtwJgWrhcsFMMfFFhFp") === "p"
-    assert Day3.find_duplicate("jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL") === "L"
-    assert Day3.find_duplicate("PmmdzqPrVvPwwTWBwg") === "P"
-    assert Day3.find_duplicate("wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn") === "v"
-    assert Day3.find_duplicate("ttgJtRGJQctTZtZT") === "t"
-    assert Day3.find_duplicate("CrZsJsPPZsGzwwsLwLmpwMDw") === "s"
+  test "find duplicate item in rucksack" do
+    unique_items =
+      @test_input
+      |> String.split("\n", trim: true)
+      |> Enum.map(&Day3.find_duplicate(&1))
+
+    assert unique_items == ["p", "L", "P", "v", "t", "s"]
   end
 
   test "part 1" do
-    input = """
-    vJrwpWtwJgWrhcsFMMfFFhFp
-    jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
-    PmmdzqPrVvPwwTWBwg
-    wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
-    ttgJtRGJQctTZtZT
-    CrZsJsPPZsGzwwsLwLmpwMDw
-    """
+    assert Day3.part1(@test_input) === 157
+  end
 
-    assert Day3.part1(input) === 157
+  test "find common items in groups of rucksacks" do
+    all_rucksacks = @test_input |> String.split("\n", trim: true)
+
+    assert Day3.find_common(all_rucksacks |> Enum.take(3)) == "r"
+    assert Day3.find_common(all_rucksacks |> Enum.drop(3) |> Enum.take(3)) == "Z"
+  end
+
+  test "part 2" do
+    assert Day3.part2(@test_input) === 70
   end
 end
