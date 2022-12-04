@@ -26,7 +26,7 @@ defmodule Day1 do
     |> String.split("\n\n", trim: true)
     |> Enum.map(fn elf ->
       String.split(elf, "\n", trim: true)
-      |> Enum.map(fn l -> String.to_integer(l) end)
+      |> Enum.map(&String.to_integer(&1))
       |> Enum.sum()
     end)
   end
