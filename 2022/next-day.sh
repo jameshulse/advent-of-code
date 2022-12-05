@@ -24,6 +24,6 @@ cd day-$day
 sed -i 's/deps: deps()/deps: deps(),\n      aliases: [test: ["test --no-start"]]/' mix.exs
 
 # Fetch input
-cookie="53616c7465645f5f7cb06b407dd955543c9c831cf46d3e1914cd45801ca7211cd9c94042ee2585a0a03bb73a2864754590d67f6e026b0777e7985c03902dfea6"
+cookie=$(cat .session)
 
 curl -A "Mozilla/5.0" -H "Cookie: session=$cookie" -o input "https://adventofcode.com/2022/day/${day}/input"
