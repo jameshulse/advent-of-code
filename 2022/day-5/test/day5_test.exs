@@ -14,7 +14,9 @@ defmodule Day5Test do
   """
 
   test "parse input" do
-    assert Day5.read_diagram(@test_input) == [
+    {stacks, _} = Day5.parse_input(@test_input)
+
+    assert stacks == [
              ["Z", "N"],
              ["M", "C", "D"],
              ["P"]
@@ -22,9 +24,9 @@ defmodule Day5Test do
   end
 
   test "perform_move_single" do
-    stacks = Day5.read_diagram(@test_input)
+    {stacks, _} = Day5.parse_input(@test_input)
 
-    assert Day5.perform_move_single(stacks, "move 1 from 2 to 1") == [
+    assert Day5.perform_move(stacks, "move 1 from 2 to 1") == [
              ["Z", "N", "D"],
              ["M", "C"],
              ["P"]
@@ -32,9 +34,9 @@ defmodule Day5Test do
   end
 
   test "perform_move_multiple" do
-    stacks = Day5.read_diagram(@test_input)
+    {stacks, _} = Day5.parse_input(@test_input)
 
-    assert Day5.perform_move_multiple(stacks, "move 2 from 1 to 3") == [
+    assert Day5.perform_move(stacks, "move 2 from 1 to 3", :multiple) == [
              [],
              ["M", "C", "D"],
              ["P", "Z", "N"]
@@ -42,7 +44,7 @@ defmodule Day5Test do
   end
 
   test "get_top" do
-    stacks = Day5.read_diagram(@test_input)
+    {stacks, _} = Day5.parse_input(@test_input)
 
     assert Day5.get_top(stacks) == "NDP"
   end
