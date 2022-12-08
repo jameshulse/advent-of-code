@@ -12,7 +12,7 @@ defmodule Day6 do
     |> String.to_charlist()
     |> Enum.chunk_every(marker_size, 1)
     |> Enum.with_index()
-    |> Enum.find(fn {segment, i} -> is_marker(segment) end)
+    |> Enum.find(fn {segment, _i} -> is_marker(segment) end)
     |> then(fn {_, i} -> i + marker_size end)
   end
 
