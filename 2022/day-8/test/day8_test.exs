@@ -14,7 +14,7 @@ defmodule Day8Test do
     input = File.read!("input")
 
     assert Day8.part1(input) == 1832
-    assert Day8.part2(input) == -1
+    assert Day8.part2(input) == 157320
   end
 
   test "part 1" do

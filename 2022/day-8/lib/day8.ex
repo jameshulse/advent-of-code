@@ -50,12 +50,12 @@ defmodule Day8 do
 
         height = Enum.at(row, x)
 
-        left = count_view(Enum.reverse(left), height)
-        up = count_view(Enum.reverse(up), height)
-        right = count_view(Enum.drop(right, 1), height)
-        down = count_view(Enum.drop(down, 1), height)
+        left_score = count_view(Enum.reverse(left), height)
+        up_score = count_view(Enum.reverse(up), height)
+        right_score = count_view(Enum.drop(right, 1), height)
+        down_score = count_view(Enum.drop(down, 1), height)
 
-        left * up * right * down
+        left_score * up_score * right_score * down_score
       end
 
     Enum.max(scenic_scores)
