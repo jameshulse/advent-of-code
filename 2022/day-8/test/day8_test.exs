@@ -13,7 +13,8 @@ defmodule Day8Test do
   test "both parts" do
     input = File.read!("input")
 
-    assert Day8.part1(input) == -1
+    assert Day8.part1(input) == 1832
+    assert Day8.part2(input) == -1
   end
 
   test "part 1" do
@@ -26,5 +27,16 @@ defmodule Day8Test do
 
     assert Day8.find_visible([{0, {4, 4}}, {9, {3, 4}}, {3, {2, 4}}, {5, {1, 4}}, {3, {0, 4}}]) ==
              [{4, 4}, {3, 4}]
+  end
+
+  test "part 2" do
+    assert Day8.part2(@test_input) == 8
+  end
+
+  test "count_view" do
+    assert Day8.count_view([], 5) == 0
+    assert Day8.count_view([5, 2], 5) == 1
+    assert Day8.count_view([1, 2], 5) == 2
+    assert Day8.count_view([4, 9], 5) == 2
   end
 end

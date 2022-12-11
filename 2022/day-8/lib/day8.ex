@@ -34,4 +34,41 @@ defmodule Day8 do
     end)
     |> then(fn {tallest, visible} -> visible end)
   end
+
+  def part2(input) do
+    forest =
+      input
+      |> String.split("\n", trim: true)
+      |> Enum.map(fn line -> String.graphemes(line) |> Enum.map(&String.to_integer/1) end)
+
+    forest_transverse = forest |> Enum.zip_with(& &1)
+
+    scenic_scores =
+      for {row, y} <- Enum.with_index(forest), {col, x} <- Enum.with_index(forest_transverse) do
+        {left, right} = Enum.split(row, x)
+        {up, down} = Enum.split(col, y)
+
+        height = Enum.at(row, x)
+
+        left = count_view(Enum.reverse(left), height)
+        up = count_view(Enum.reverse(up), height)
+        right = count_view(Enum.drop(right, 1), height)
+        down = count_view(Enum.drop(down, 1), height)
+
+        left * up * right * down
+      end
+
+    Enum.max(scenic_scores)
+  end
+
+  def count_view(view, height, count \\ 0)
+  def count_view([], _height, count), do: count
+  def count_view(_view, 0, _count), do: 0
+
+  def count_view([next | rest], height, count) do
+    cond do
+      next < height -> count_view(rest, height, count + 1)
+      true -> count + 1
+    end
+  end
 end
