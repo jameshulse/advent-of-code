@@ -27,28 +27,39 @@ defmodule Day9Test do
     input = File.read!("input")
 
     assert Day9.part1(input) == 5735
-    assert Day9.part2(input) == -1
+    assert Day9.part2(input) == 2478
   end
 
   test "part 1" do
     assert Day9.part1(@simple_input) == 13
   end
 
-  test "step_simple" do
-    assert Day9.step_simple({{0, 0}, {0, 0}}, "R") == {{1, 0}, {0, 0}}
-    assert Day9.step_simple({{1, 0}, {0, 0}}, "R") == {{2, 0}, {1, 0}}
-    assert Day9.step_simple({{4, 0}, {3, 0}}, "U") == {{4, -1}, {3, 0}}
-    assert Day9.step_simple({{4, -1}, {3, 0}}, "U") == {{4, -2}, {4, -1}}
+  test "step" do
+    assert Day9.step({0, 0}, {0, 0}, "R") == {{1, 0}, {0, 0}}
+    assert Day9.step({1, 0}, {0, 0}, "R") == {{2, 0}, {1, 0}}
+    assert Day9.step({4, 0}, {3, 0}, "U") == {{4, -1}, {3, 0}}
+    assert Day9.step({4, -1}, {3, 0}, "U") == {{4, -2}, {4, -1}}
   end
 
-  # test "part 2" do
-  #   assert Day9.part2(@simple_input) == 1
-  #   assert Day9.part2(@advanced_input) == 36
-  # end
+  test "part 2" do
+    assert Day9.part2(@simple_input) == 1
+    assert Day9.part2(@advanced_input) == 36
+  end
 
-  # test "step_advanced" do
+  test "follow" do
+    # Simple examples
+    assert Day9.follow({0, 0}, {0, 0}) == {0, 0}
+    assert Day9.follow({1, 0}, {0, 0}) == {0, 0}
+    assert Day9.follow({2, 0}, {0, 0}) == {1, 0}
+    assert Day9.follow({-2, 0}, {0, 0}) == {-1, 0}
+    assert Day9.follow({0, -2}, {0, 0}) == {0, -1}
+    assert Day9.follow({0, 2}, {0, 0}) == {0, 1}
 
-  # end
+    # Complex examples
+    assert Day9.follow({0, 0}, {1, 2}) == {0, 1}
+    assert Day9.follow({2, -1}, {0, 0}) == {1, -1}
+    assert Day9.follow({1, -1}, {0, 0}) == {0, 0}
+  end
 
   test "move" do
     assert Day9.move({0, 0}, "R") == {1, 0}
