@@ -10,6 +10,34 @@ defmodule Day10 do
     |> then(fn value -> value end)
   end
 
+  def part2(input) do
+    output = render_output(input)
+
+    IO.puts(output)
+  end
+
+  @screen_width 40
+
+  def render_output(input) do
+    values = parse_instructions(input) |> run_program() |> Enum.with_index()
+
+    for {value, i} <- values, into: "" do
+      cycle = i + 1
+
+      display =
+        cond do
+          abs(value - rem(i, 40)) <= 1 -> "#"
+          true -> "."
+        end
+
+      if rem(cycle, @screen_width) == 0 do
+        "#{display}\n"
+      else
+        display
+      end
+    end
+  end
+
   def parse_instructions(input) do
     input
     |> String.split("\n", trim: true)
@@ -32,7 +60,7 @@ defmodule Day10 do
         :addx -> {[register, register], register + arg}
       end
     end)
-    |> then(fn {values, register} -> values ++ [register] end)
+    |> then(fn {values, register} -> values end)
   end
 
   def signal_strength(cycle, register), do: cycle * register

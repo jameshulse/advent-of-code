@@ -159,16 +159,31 @@ defmodule Day10Test do
   test "both parts" do
     input = File.read!("input")
 
-    assert Day10.part1(input) == -1
+    assert Day10.part1(input) == 14520
+
+    IO.puts("Part output (PZBGZEJB):")
+
+    Day10.part2(input)
   end
-  
+
   test "part 1" do
     assert Day10.part1(@large_input) == 13140
+  end
+
+  test "part 2" do
+    assert Day10.render_output(@large_input) === """
+           ##..##..##..##..##..##..##..##..##..##..
+           ###...###...###...###...###...###...###.
+           ####....####....####....####....####....
+           #####.....#####.....#####.....#####.....
+           ######......######......######......####
+           #######.......#######.......#######.....
+           """
   end
 
   test "run_program" do
     instructions = Day10.parse_instructions(@small_input)
 
-    assert Day10.run_program(instructions) == [1, 1, 1, 4, 4, -1]
+    assert Day10.run_program(instructions) == [1, 1, 1, 4, 4]
   end
 end
