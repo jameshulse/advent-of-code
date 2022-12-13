@@ -31,14 +31,21 @@ defmodule Day11Test do
       If false: throw to monkey 1
   """
 
+  @tag timeout: :infinity
   test "both parts" do
     input = File.read!("input")
 
-    assert Day11.part1(input) == -1
+    assert Day11.part1(input) == 88208
+    # assert Day11.part2(input) == -1
   end
 
   test "part 1" do
     assert Day11.part1(@test_input) == 10605
+  end
+
+  @tag timeout: :infinity
+  test "part 2" do
+    assert Day11.part2(@test_input) == 2_713_310_158
   end
 
   test "parse_input" do
