@@ -31,16 +31,43 @@ defmodule Day11Test do
       If false: throw to monkey 1
   """
 
-  test "part 1" do
-    assert Day11.part1(@test_input) == -1
+  test "both parts" do
+    input = File.read!("input")
+
+    assert Day11.part1(input) == -1
   end
-  
+
+  test "part 1" do
+    assert Day11.part1(@test_input) == 10605
+  end
+
   test "parse_input" do
-    assert Day1.parse_input(@test_input) == [
-      %{items: [79, 98], op: {:multiply, 19}, test: 23, true: 2, false, 3}
-      %{items: [54, 65, 75, 74], op: {:add, 6}, test: 19, true: 2, false, 0}
-      %{items: [79, 60, 97], op: {:square}, test: 13, true: 1, false, 3}
-      %{items: [74], op: {:add, 3}, test: 17, true: 0, false, 1}
-    ]
+    assert Day11.parse_input(@test_input) == [
+             %{
+               items: [79, 98],
+               operation: {:multiply, 19},
+               test: 23,
+               if_true: 2,
+               if_false: 3,
+               activity: 0
+             },
+             %{
+               items: [54, 65, 75, 74],
+               operation: {:add, 6},
+               test: 19,
+               if_true: 2,
+               if_false: 0,
+               activity: 0
+             },
+             %{
+               items: [79, 60, 97],
+               operation: {:square},
+               test: 13,
+               if_true: 1,
+               if_false: 3,
+               activity: 0
+             },
+             %{items: [74], operation: {:add, 3}, test: 17, if_true: 0, if_false: 1, activity: 0}
+           ]
   end
 end
