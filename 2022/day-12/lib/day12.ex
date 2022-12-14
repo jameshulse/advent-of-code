@@ -1,7 +1,30 @@
 defmodule Day12 do
   def part1(input) do
-    %{size: {width, height} = size, map: map, start: start, goal: goal} = build_map(input)
+    %{size: size, map: map, start: start, goal: goal} = build_map(input)
 
+    path = navigate(map, size, start, goal)
+
+    length(path)
+  end
+
+  def part2(input) do
+    %{size: size, map: map, goal: goal} = build_map(input)
+
+    starting_points =
+      map
+      |> Enum.with_index()
+      |> Enum.filter(fn {h, _i} -> h == 0 end)
+      |> Enum.map(fn {_h, i} -> index_to_coord(size, i) end)
+
+    starting_points
+    |> Enum.map(fn s -> navigate(map, size, s, goal) end)
+    |> Enum.map(fn path -> length(path) end)
+    |> Enum.filter(fn l -> l > 0 end)
+    |> Enum.sort(:asc)
+    |> List.first()
+  end
+
+  def navigate(map, size, start, goal) do
     # Get visitable nodes from current position
     nodes = fn {x, y} = current ->
       current_idx = coord_to_index(size, current)
@@ -21,9 +44,7 @@ defmodule Day12 do
     dist = fn _a, _b -> 1 end
     h = fn _a, _b -> 1 end
 
-    path = Astar.astar({nodes, dist, h}, start, fn v -> v == goal end)
-
-    length(path)
+    Astar.astar({nodes, dist, h}, start, fn v -> v == goal end)
   end
 
   def build_map(input) do
@@ -57,11 +78,11 @@ defmodule Day12 do
   def alpha_to_height(alpha) when alpha == ?E, do: ?z - ?a
   def alpha_to_height(alpha), do: alpha - ?a
 
-  def index_to_coord({width, height}, index) do
+  def index_to_coord({width, _height}, index) do
     {rem(index, width), div(index, width)}
   end
 
-  def coord_to_index({width, height}, {x, y}) do
+  def coord_to_index({width, _height}, {x, y}) do
     y * width + x
   end
 end

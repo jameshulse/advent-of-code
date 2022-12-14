@@ -12,11 +12,16 @@ defmodule Day12Test do
   test "both parts" do
     input = File.read!("input")
 
-    assert Day12.part1(input) == 0
+    assert Day12.part1(input) == 423
+    assert Day12.part2(input) == 416
   end
 
   test "part1" do
     assert Day12.part1(@test_input) == 31
+  end
+
+  test "part2" do
+    assert Day12.part2(@test_input) == 29
   end
 
   test "build_map" do
