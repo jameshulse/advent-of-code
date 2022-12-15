@@ -12,6 +12,7 @@ defmodule Day13 do
       {{first, second}, i + 1}
     end)
     |> Enum.filter(fn {{left, right}, _num} -> compare(left, right) end)
+    # |> IO.inspect(label: "Result", charlists: false)
     |> Enum.map(fn {_arrays, num} -> num end)
     |> Enum.sum()
   end
@@ -25,10 +26,10 @@ defmodule Day13 do
     end)
     |> Enum.concat([[[2]], [[6]]])
     |> Enum.sort(&compare/2)
-    |> IO.inspect(charlists: false)
     |> Enum.with_index()
     |> Enum.filter(fn {packet, _i} -> packet == [[2]] or packet == [[6]] end)
     |> Enum.map(fn {_packet, i} -> i + 1 end)
+    # |> IO.inspect(charlists: false)
     |> Enum.reduce(1, &*/2)
   end
 
@@ -36,11 +37,18 @@ defmodule Day13 do
     {l, left} = List.pop_at(left, 0)
     {r, right} = List.pop_at(right, 0)
 
-    IO.inspect({l, r}, label: "Compare", charlists: false)
+    # IO.inspect(%{comparing: {l, r}, remaining: {left, right}}, charlists: false)
 
     cond do
+      is_integer(l) and is_integer(r) ->
+        cond do
+          l == r -> compare(left, right)
+          l < r -> true
+          l > r -> false
+        end
+
       l == nil and r == nil ->
-        true
+        nil
 
       l == nil ->
         true
@@ -48,23 +56,18 @@ defmodule Day13 do
       r == nil ->
         false
 
+      is_list(l) and is_list(r) ->
+        Enum.zip(l, r)
+        |> Enum.map(&compare/2)
+
       is_integer(l) and is_list(r) ->
-        compare([l], r) and compare(left, right)
+        compare([l] ++ left, r ++ right)
 
       is_list(l) and is_integer(r) ->
-        compare(l, [r]) and compare(left, right)
+        compare(l ++ left, [r] ++ right)
 
-      is_list(l) and is_list(r) ->
-        compare(l, r) and compare(left, right)
-
-      l == r ->
-        true
-
-      l < r ->
-        true
-
-      l > r ->
-        false
+      true ->
+        raise "Fall through!"
     end
   end
 end
