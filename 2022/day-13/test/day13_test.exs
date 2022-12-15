@@ -28,16 +28,16 @@ defmodule Day13Test do
   [1,[2,[3,[4,[5,6,0]]]],8,9]
   """
 
-  # test "both parts" do
-  #   input = File.read!("input")
+  test "both parts" do
+    input = File.read!("input")
 
-  #   assert Day13.part1(input) == 5825
-  #   assert Day13.part2(input) == -1
-  # end
+    assert Day13.part1(input) == 5825
+    assert Day13.part2(input) == 24477
+  end
 
-  # test "part1" do
-  # assert Day13.part1(@test_input) == 13
-  # end
+  test "part1" do
+    assert Day13.part1(@test_input) == 13
+  end
 
   test "part2" do
     assert Day13.part2(@test_input) == 140
@@ -51,7 +51,6 @@ defmodule Day13Test do
     assert Day13.compare([7, 7, 7, 7], [7, 7, 7]) == false
     assert Day13.compare([], [3]) == true
     assert Day13.compare([[[]]], [[]]) == false
-    assert Day13.compare([[[]]], [[], 1]) == true
 
     assert Day13.compare([1, [2, [3, [4, [5, 6, 7]]]], 8, 9], [
              1,
