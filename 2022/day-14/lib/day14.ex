@@ -3,41 +3,50 @@ defmodule Day14 do
   @sand 2
 
   def part1(input) do
-    map = build_map(input)
+    {map, _floor} = build_map(input)
 
-    count_drops(map)
+    count_drops_simple(map)
   end
 
   def part2(input) do
-    map = build_map(input)
+    {map, floor} = build_map(input)
 
-    -1
+    count_drops_advanced(map, floor)
   end
 
-  def count_drops(map, counter \\ 0, source \\ {500, 0}) do
+  def count_drops_simple(map, counter \\ 0, source \\ {500, 0}) do
     case drop_sand(map, source) do
       :abyss -> counter
-      {:stopped, new_map} -> count_drops(new_map, counter + 1, source)
+      {:stopped, new_map, _coord} -> count_drops_simple(new_map, counter + 1, source)
     end
   end
 
-  def drop_sand(map, {x, y} = coord) do
+  def count_drops_advanced(map, floor, counter \\ 0, source \\ {500, 0}) do
+    case drop_sand(map, source, floor) do
+      {:stopped, _map, {500, 0}} -> counter + 1
+      {:stopped, new_map, _} -> count_drops_advanced(new_map, floor, counter + 1, source)
+    end
+  end
+
+  def drop_sand(map, {x, y} = coord, floor \\ nil) do
     cond do
       blocked?(map, {x, y + 1}) and !blocked?(map, {x - 1, y + 1}) ->
-        drop_sand(map, {x - 1, y + 1})
+        drop_sand(map, {x - 1, y + 1}, floor)
 
       blocked?(map, {x, y + 1}) and !blocked?(map, {x + 1, y + 1}) ->
-        drop_sand(map, {x + 1, y + 1})
+        drop_sand(map, {x + 1, y + 1}, floor)
 
       blocked?(map, {x, y + 1}) ->
-        new_map = Map.put(map, {x, y}, @sand)
-        {:stopped, new_map}
+        {:stopped, Map.put(map, {x, y}, @sand), {x, y}}
 
-      abyss?(map, {x, y}) ->
+      floor != nil and y + 1 == floor ->
+        {:stopped, Map.put(map, {x, y}, @sand), {x, y}}
+
+      floor == nil and abyss?(map, {x, y}) ->
         :abyss
 
       true ->
-        drop_sand(map, {x, y + 1})
+        drop_sand(map, {x, y + 1}, floor)
     end
   end
 
@@ -57,11 +66,15 @@ defmodule Day14 do
     input
     |> String.split("\n", trim: true)
     |> Enum.flat_map(&parse_path/1)
-    |> Enum.reduce(Map.new(), fn {{x_from, y_from}, {x_to, y_to}}, map ->
-      for x <- x_from..x_to, y <- y_from..y_to, into: map do
-        {{x, y}, @rock}
-      end
+    |> Enum.reduce({Map.new(), 0}, fn {{x_from, y_from}, {x_to, y_to}}, {map, floor} ->
+      map =
+        for x <- x_from..x_to, y <- y_from..y_to, into: map do
+          {{x, y}, @rock}
+        end
+
+      {map, max(max(floor, y_to), y_from)}
     end)
+    |> then(fn {map, max_height} -> {map, max_height + 2} end)
   end
 
   def parse_path(line) do
