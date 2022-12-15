@@ -7,22 +7,13 @@ defmodule Day11 do
 
   def part2(input) do
     monkeys = parse_input(input)
-    run_simulation(monkeys, 1_000, :big_int)
+    modulo = monkeys |> Enum.reduce(1, fn m, a -> m[:test] * a end)
+
+    run_simulation(monkeys, 10_000, {:modulo, modulo})
   end
 
   def run_simulation(monkeys, rounds, management_strategy) do
     Enum.reduce(0..(rounds * length(monkeys) - 1), monkeys, fn i, monkeys ->
-      # if rem(i, 1001) == 0 do
-      #   IO.inspect("round #{i}", label: "Status")
-
-      #   IO.inspect(
-      #     Enum.map(monkeys, fn m ->
-      #       %{item_count: length(m[:items]), activity: m[:activity]}
-      #     end),
-      #     label: "Monkeys"
-      #   )
-      # end
-
       monkey_index = rem(i, length(monkeys))
       monkey = Enum.at(monkeys, monkey_index)
 
@@ -39,7 +30,11 @@ defmodule Day11 do
             {:multiply, multiplier} -> worry * multiplier
           end
 
-        worry = if management_strategy == :divide_by_3, do: div(worry, 3), else: worry
+        worry =
+          case management_strategy do
+            :divide_by_3 -> div(worry, 3)
+            {:modulo, modulo} -> rem(worry, modulo)
+          end
 
         send_to =
           if rem(worry, monkey[:test]) === 0, do: monkey[:if_true], else: monkey[:if_false]
@@ -60,7 +55,6 @@ defmodule Day11 do
         })
       end)
     end)
-    |> IO.inspect(charlists: false)
     |> Enum.map(fn m -> m[:activity] end)
     |> Enum.sort(:desc)
     |> Enum.take(2)
