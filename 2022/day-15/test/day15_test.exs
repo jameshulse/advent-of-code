@@ -22,7 +22,7 @@ defmodule Day15Test do
     input = File.read!("input")
 
     assert Day15.part1(input, 2_000_000) == 4_951_427
-    assert Day15.part2(input, 0..4_000_000) == -1
+    assert Day15.part2(input, 0..4_000_000) == 13_029_714_573_243
   end
 
   test "part1" do
@@ -50,7 +50,7 @@ defmodule Day15Test do
     assert Day15.reduce_ranges(
              [3_666_940..4_000_000, 2_658_353..3_257_427, 3_257_429..3_859_523, 0..2_780_821]
              |> Enum.sort()
-           ) == [0..4_000_000]
+           ) == [0..3_257_427, 3_257_429..4_000_000]
   end
 
   test "overlap?" do

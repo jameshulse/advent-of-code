@@ -34,6 +34,8 @@ defmodule Day15 do
   end
 
   def reduce_ranges(ranges) do
+    ranges = ranges |> Enum.sort()
+
     overlap =
       Enum.zip(ranges, Enum.drop(ranges, 1))
       |> Enum.find(fn {l, r} -> overlap?(l, r) end)
