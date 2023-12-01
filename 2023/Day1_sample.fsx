@@ -20,7 +20,6 @@ let sample =
 9000
 
 10000
-
 """
 
 let getWeights (input: string) =
@@ -41,6 +40,6 @@ let part2 input =
     |> Seq.sortDescending
     |> Seq.take 3
     |> Seq.sum
-    
+
 part2 sample
 part2 day1Input
