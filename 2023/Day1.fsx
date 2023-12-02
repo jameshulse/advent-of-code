@@ -1,7 +1,6 @@
 ﻿#r "nuget: FsHttp"
 #load "Advent.fs"
 
-open System
 open System.Text.RegularExpressions
 open Advent
 
@@ -16,13 +15,14 @@ treb7uchet
 let input = getInput 2023 1
 
 let part1 (data: string) =
-    data.Split("\n", StringSplitOptions.RemoveEmptyEntries)
+    splitByLine data
     |> Seq.map (fun (line) -> Regex.Replace(line, @"[^\d]", ""))
     |> Seq.map (fun (digits) -> int $"%c{digits[0]}%c{digits[digits.Length - 1]}")
     |> Seq.sum
 
 part1 sample // 142
 part1 input // 55123
+
 
 let sample2 =
     """
@@ -58,9 +58,8 @@ let getCalibration (input: string) =
 
     (matchToNumber first) * 10 + (matchToNumber last)
 
-let part2Take2 (data: string) =
-    data.Split("\n", StringSplitOptions.RemoveEmptyEntries)
-    |> Seq.sumBy getCalibration
+let part2 (data: string) =
+    splitByLine data |> Seq.sumBy getCalibration
 
-part2Take2 sample2 // 281
-part2Take2 input // 55260
+part2 sample2 // 281
+part2 input // 55260

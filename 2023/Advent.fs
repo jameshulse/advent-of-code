@@ -1,8 +1,9 @@
 module Advent
 
+open System
+open System.IO
 open FsHttp
 open FsHttp.Response
-open System.IO
 
 let getInput year day =
     let session = File.ReadAllText ".session"
@@ -14,3 +15,9 @@ let getInput year day =
     }
     |> Request.send
     |> toText
+
+let splitByLine (data: string) =
+    data.Split("\n", StringSplitOptions.RemoveEmptyEntries)
+
+let splitByEmptyLines (data: string) =
+    data.Split("\n\n", StringSplitOptions.RemoveEmptyEntries)
