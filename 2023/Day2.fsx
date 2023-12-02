@@ -1,9 +1,10 @@
 ﻿#r "nuget: FsHttp"
+#r "nuget: FSharp.Text.RegexProvider"
 #load "Advent.fs"
 
 open System
 open Advent
-open System.Text.RegularExpressions
+open FSharp.Text.RegexProvider
 
 let sample =
     """
@@ -17,25 +18,27 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
 let input = getInput 2023 2
 
 type Game =
-    { id: int
-      red: int
-      green: int
-      blue: int }
+    { Id: int
+      Red: int
+      Green: int
+      Blue: int }
 
-// type Reveal =
-//     | Red of int
-//     | Green of int
-//     | Blue of int
+type ParseReveal = Regex< @"(?<Count>\d+) (?<Colour>\w+)" >
 
-// let (|Red|Green|Blue|) ParseReveal reveal =
+let (|Red|Green|Blue|) reveal =
+    let ballSearch = ParseReveal().TypedMatch(reveal)
+    let count = int ballSearch.Count.Value
+
+    match ballSearch.Colour.Value with
+    | "red" -> Red(count)
+    | "green" -> Green(count)
+    | "blue" -> Blue(count)
+    | _ -> failwithf $"Unknown colour: {ballSearch.Colour}"
+
+type ParseGameId = Regex< @"Game (?<Id>\d+):" >
 
 let parseGame line =
-    let idSearch =
-        Regex("Game (\\d+):", RegexOptions.Compiled)
-            .Match(line)
-
-    let id = int idSearch.Groups[1].Value
-
+    let id = int (ParseGameId().TypedMatch(line).Id.Value)
     let rounds = line.Substring(line.IndexOf(": ") + 2).Split("; ")
 
     let mutable maxRed = 0
@@ -44,46 +47,41 @@ let parseGame line =
 
     for round in rounds do
         for reveal in round.Split(", ") do
-            let ballSearch =
-                Regex(@"(\d+) (\w+)", RegexOptions.Compiled)
-                    .Match(reveal)
+            match reveal with
+            | Red (count) -> maxRed <- Math.Max(count, maxRed)
+            | Green (count) -> maxGreen <- Math.Max(count, maxGreen)
+            | Blue (count) -> maxBlue <- Math.Max(count, maxBlue)
 
-            let count = int ballSearch.Groups[1].Value
-            let colour = ballSearch.Groups[2].Value
+    { Id = id
+      Red = maxRed
+      Green = maxGreen
+      Blue = maxBlue }
 
-            match colour with
-            | "red" when count > maxRed -> maxRed <- count
-            | "green" when count > maxGreen -> maxGreen <- count
-            | "blue" when count > maxBlue -> maxBlue <- count
-            | _ -> ignore ()
-
-    { id = id
-      red = maxRed
-      green = maxGreen
-      blue = maxBlue }
+let gameMeetsThreshold (maxRed, maxGreen, maxBlue) game =
+    game.Red <= maxRed
+    && game.Green <= maxGreen
+    && game.Blue <= maxBlue
 
 let part1 data =
-    let maxRed = 12
-    let maxGreen = 13
-    let maxBlue = 14
+    let meetsElfThreshold = gameMeetsThreshold (12, 13, 14)
 
     splitByLine data
     |> Seq.map parseGame
-    |> Seq.filter (fun (game) ->
-        game.red <= maxRed
-        && game.green <= maxGreen
-        && game.blue <= maxBlue)
-    |> Seq.map (fun (game) -> game.id)
+    |> Seq.filter meetsElfThreshold
+    |> Seq.map (fun (game) -> game.Id)
     |> Seq.sum
 
-part1 sample // 8?
+part1 sample // 8
 part1 input // 2727
+
+let calculateGamePower game = game.Red * game.Green * game.Blue
 
 let part2 data =
     splitByLine data
     |> Seq.map parseGame
-    |> Seq.map (fun (game) -> game.red * game.green * game.blue)
-    |> Seq.sum
+    |> Seq.sumBy calculateGamePower
 
 part2 sample // 2286
-part2 input // ?
+part2 input // 56580
+
+bench (fun () -> part2 input)

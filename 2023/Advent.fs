@@ -2,6 +2,7 @@ module Advent
 
 open System
 open System.IO
+open System.Diagnostics
 open FsHttp
 open FsHttp.Response
 
@@ -21,3 +22,9 @@ let splitByLine (data: string) =
 
 let splitByEmptyLines (data: string) =
     data.Split("\n\n", StringSplitOptions.RemoveEmptyEntries)
+
+let bench func =
+    let sw = Stopwatch.StartNew()
+    let result = func ()
+    sw.Stop()
+    (result, sw.Elapsed)
