@@ -20,13 +20,6 @@ let sample =
 
 let input = getInput 2023 3
 
-let matchSymbols = Regex(@"[^\d\.]{1}", RegexOptions.Compiled)
-
-let findSymbols line =
-    matchSymbols.Matches(line)
-    |> Seq.map (fun symbol -> (symbol.Value, symbol.Index))
-    |> Seq.toArray
-
 type Part =
     { Value: int
       Y: int
@@ -53,6 +46,20 @@ let findParts lines =
 
 type Symbol = { Value: string; X: int; Y: int }
 
+let matchSymbols = Regex(@"[^\d\.]{1}", RegexOptions.Compiled)
+
+let findSymbolsOnLine line =
+    matchSymbols.Matches(line)
+    |> Seq.map (fun symbol -> (symbol.Value, symbol.Index))
+    |> Seq.toArray
+
+let findSymbols lines =
+    lines
+    |> Array.mapi (fun y line -> (y, findSymbolsOnLine line))
+    |> Array.collect (fun (y, symbols) ->
+        symbols
+        |> Array.map (fun (symbol, x) -> { Value = symbol; X = x; Y = y }))
+
 let findAdjacentParts allParts symbol =
     allParts
     |> Array.filter (fun (part: Part) ->
@@ -63,14 +70,7 @@ let findAdjacentParts allParts symbol =
 
 let part1 data =
     let lines = splitByLine data
-
-    let symbols =
-        lines
-        |> Array.mapi (fun y line -> (y, findSymbols line))
-        |> Array.collect (fun (y, symbols) ->
-            symbols
-            |> Array.map (fun (symbol, x) -> { Value = symbol; X = x; Y = y }))
-
+    let symbols = findSymbols lines
     let parts = findParts lines
 
     symbols
@@ -83,21 +83,16 @@ part1 input // 554003
 let part2 data =
     let lines = splitByLine data
 
-    let asterisks =
-        lines
-        |> Array.mapi (fun y line -> (y, findSymbols line))
-        |> Array.collect (fun (y, symbols) ->
-            symbols
-            |> Array.map (fun (symbol, x) -> (symbol, (x, y))))
-        |> Array.map (fun (symbol, (x, y)) -> { Value = symbol; X = x; Y = y })
-        |> Array.filter (fun symbol -> symbol.Value = "*")
+    let gears =
+        findSymbols lines
+        |> Array.filter (fun s -> s.Value = "*")
 
     let parts = findParts lines
 
-    asterisks
+    gears
     |> Array.map (findAdjacentParts parts)
-    |> Array.filter (fun parts -> parts.Length = 2)
-    |> Array.sumBy (fun parts -> parts[0].Value * parts[1].Value)
+    |> Array.filter (fun adjacent -> adjacent.Length = 2)
+    |> Array.sumBy (fun adjacent -> adjacent[0].Value * adjacent[1].Value)
 
 part2 sample // 467835
 part2 input // 87263515
