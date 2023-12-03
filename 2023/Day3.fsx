@@ -1,10 +1,7 @@
 ﻿#r "nuget: FsHttp"
-#r "nuget: FSharp.Text.RegexProvider"
 #load "Advent.fs"
 
-open System
 open Advent
-// open FSharp.Text.RegexProvider
 open System.Text.RegularExpressions
 
 let sample =
@@ -23,15 +20,12 @@ let sample =
 
 let input = getInput 2023 3
 
-let matchSymbols = Regex(@"[^\d\.]", RegexOptions.Compiled)
+let matchSymbols = Regex(@"[^\d\.]{1}", RegexOptions.Compiled)
 
 let findSymbols line =
     matchSymbols.Matches(line)
     |> Seq.map (fun symbol -> (symbol.Value, symbol.Index))
     |> Seq.toArray
-
-
-let matchNumbers = Regex(@"\d+", RegexOptions.Compiled)
 
 type Part =
     { Value: int
@@ -39,26 +33,33 @@ type Part =
       XStart: int
       XEnd: int }
 
-let findNumbers line =
+let matchNumbers = Regex(@"\d{1,3}", RegexOptions.Compiled)
+
+let findNumbersOnLine line =
     matchNumbers.Matches(line)
     |> Seq.map (fun number -> (int number.Value, number.Index, number.Length))
     |> Seq.toArray
 
-findNumbers "467..114.."
-findNumbers "...*......"
-findNumbers ".....+.58."
+let findParts lines =
+    lines
+    |> Array.mapi (fun y line -> (y, findNumbersOnLine line))
+    |> Array.collect (fun (y, numbers) ->
+        numbers
+        |> Array.map (fun (value, ind, len) ->
+            { Value = value
+              Y = y
+              XStart = ind
+              XEnd = ind + len - 1 }))
 
-let partTouchesSymbol symbols part =
-    let mutable touches = false
+type Symbol = { Value: string; X: int; Y: int }
 
-    for (symX, symY) in symbols do
-        if symY >= part.Y - 1
-           && symY <= part.Y + 1
-           && symX >= part.XStart - 1
-           && symX <= part.XEnd + 1 then
-            touches <- true
-
-    touches
+let findAdjacentParts allParts symbol =
+    allParts
+    |> Array.filter (fun (part: Part) ->
+        symbol.Y >= part.Y - 1
+        && symbol.Y <= part.Y + 1
+        && symbol.X >= part.XStart - 1
+        && symbol.X <= part.XEnd + 1)
 
 let part1 data =
     let lines = splitByLine data
@@ -66,35 +67,18 @@ let part1 data =
     let symbols =
         lines
         |> Array.mapi (fun y line -> (y, findSymbols line))
-        |> Array.collect (fun (y, symbols) -> symbols |> Array.map (fun (_, x) -> (x, y)))
+        |> Array.collect (fun (y, symbols) ->
+            symbols
+            |> Array.map (fun (symbol, x) -> { Value = symbol; X = x; Y = y }))
 
-    let parts =
-        lines
-        |> Array.mapi (fun y line -> (y, findNumbers line))
-        |> Array.collect (fun (y, numbers) ->
-            numbers
-            |> Array.map (fun (value, ind, len) ->
-                { Value = value
-                  Y = y
-                  XStart = ind
-                  XEnd = ind + len - 1 }))
+    let parts = findParts lines
 
-    parts
-    |> Array.filter (partTouchesSymbol symbols)
+    symbols
+    |> Array.collect (fun symbol -> findAdjacentParts parts symbol)
     |> Array.sumBy (fun part -> part.Value)
 
-part1 sample
-part1 input
-
-let adjacentParts parts symbol =
-    let (symX, symY) = symbol
-
-    parts
-    |> Array.filter (fun (part: Part) ->
-        symY >= part.Y - 1
-        && symY <= part.Y + 1
-        && symX >= part.XStart - 1
-        && symX <= part.XEnd + 1)
+part1 sample // 4361
+part1 input // 554003
 
 let part2 data =
     let lines = splitByLine data
@@ -105,24 +89,15 @@ let part2 data =
         |> Array.collect (fun (y, symbols) ->
             symbols
             |> Array.map (fun (symbol, x) -> (symbol, (x, y))))
-        |> Array.filter (fun (symbol, _pos) -> symbol = "*")
-        |> Array.map (fun (_symbol, pos) -> pos)
+        |> Array.map (fun (symbol, (x, y)) -> { Value = symbol; X = x; Y = y })
+        |> Array.filter (fun symbol -> symbol.Value = "*")
 
-    let parts =
-        lines
-        |> Array.mapi (fun y line -> (y, findNumbers line))
-        |> Array.collect (fun (y, numbers) ->
-            numbers
-            |> Array.map (fun (value, ind, len) ->
-                { Value = value
-                  Y = y
-                  XStart = ind
-                  XEnd = ind + len - 1 }))
+    let parts = findParts lines
 
     asterisks
-    |> Array.map (adjacentParts parts)
+    |> Array.map (findAdjacentParts parts)
     |> Array.filter (fun parts -> parts.Length = 2)
     |> Array.sumBy (fun parts -> parts[0].Value * parts[1].Value)
 
-part2 sample
-part2 input
+part2 sample // 467835
+part2 input // 87263515
