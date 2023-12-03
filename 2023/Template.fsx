@@ -1,8 +1,10 @@
 ﻿#r "nuget: FsHttp"
+#r "nuget: FSharp.Text.RegexProvider"
 #load "Advent.fs"
 
 open System
 open Advent
+open FSharp.Text.RegexProvider
 
 let sample =
     """
