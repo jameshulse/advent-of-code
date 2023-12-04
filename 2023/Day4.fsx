@@ -40,7 +40,7 @@ let parseCard line =
             .Played.Value.Split(" ", StringSplitOptions.RemoveEmptyEntries)
         |> Array.map (fun w -> w.Trim())
 
-    { Id = int(ParseId().TypedMatch(line).Id.Value)
+    { Id = int (ParseId().TypedMatch(line).Id.Value)
       WinningNumbers = winning
       PlayedNumbers = played }
 
@@ -63,20 +63,32 @@ let part1 data =
 part1 sample // 13
 part1 input // 21959
 
-// let part2 data =
-//     let allCards = splitByLine data |> Array.map parseCard
+let part2 data =
+    let allCards = splitByLine data |> Array.map parseCard
 
-//     let winningCounts =
-//         allCards
-//         |> Array.map (fun card -> card.Id, countWinners card)
-//         |> dict
+    let winningCounts =
+        allCards
+        |> Array.map (fun card -> card.Id, countWinners card)
+        |> dict
 
-//     let rec countCards card count =
-//         match winningCounts[card.Id] with
-//         | 0 -> count
-//         | n ->
+    let rec countCards toProcess count =
+        match toProcess with
+        | nextId :: tail ->
+            let winCount = winningCounts[nextId]
 
-//     countCards (Array.head allCards)
+            let newCards =
+                [ nextId + 1 .. (nextId + winCount) ]
+                |> Seq.toList
 
-// part2 sample // 30?
-// part2 input
+            countCards (tail @ newCards) (count + 1)
+        | [] -> count
+
+    let initProcess =
+        allCards
+        |> Array.map (fun card -> card.Id)
+        |> Array.toList
+
+    countCards initProcess 0
+
+part2 sample // 30?
+part2 input // ?
