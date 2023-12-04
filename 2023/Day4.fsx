@@ -49,41 +49,27 @@ part1 sample // 13
 part1 input // 21959
 
 let part2 data =
-    let allCards =
+    let winsByCard =
         splitByLine data
         |> Array.map parseCard
-        |> Array.map (fun card -> card.Id, card)
+        |> Array.map (fun card -> card.Id, card.Wins)
         |> dict
-
-    let countCache = new Dictionary<int, int>()
 
     let rec countCards toProcess count =
         match toProcess with
         | nextId :: tail ->
+            let winCount = winsByCard[nextId]
+
             let subCount =
-                match countCache.TryGetValue(nextId) with
-                | true, count -> count
-                | _ ->
-                    let winCount = allCards[nextId].Wins
-
-                    let subCount' =
-                        if winCount = 0 then
-                            0
-                        else
-                            let newCards = [ nextId + 1 .. (nextId + winCount) ]
-
-                            countCards newCards 0
-
-                    countCache.Add(nextId, subCount')
-
-                    subCount'
+                if winCount = 0 then
+                    0
+                else
+                    countCards [ nextId + 1 .. (nextId + winCount) ] 0
 
             countCards (tail) (count + subCount + 1)
         | [] -> count
 
-    let initProcess = allCards.Keys |> Seq.toList
-
-    countCards initProcess 0
+    countCards (winsByCard.Keys |> Seq.toList) 0
 
 part2 sample // 30
 part2 input // 5132675
