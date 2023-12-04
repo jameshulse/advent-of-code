@@ -77,25 +77,26 @@ let part2 data =
     let rec countCards toProcess count =
         match toProcess with
         | nextId :: tail ->
-            match countCache.TryGetValue(nextId) with
-            | true, subCount -> countCards (tail) (count + subCount + 1)
-            | _ ->
-                let winCount = winningCounts[nextId]
+            let subCount =
+                match countCache.TryGetValue(nextId) with
+                | true, count -> count
+                | _ ->
+                    let winCount = winningCounts[nextId]
 
-                if winCount = 0 then
-                    countCache.Add(nextId, 0)
+                    let subCount' =
+                        if winCount = 0 then
+                            0
+                        else
+                            let newCards =
+                                [ nextId + 1 .. (nextId + winCount) ]
 
-                    countCards tail (count + 1)
-                else
-                    let newCards =
-                        [ nextId + 1 .. (nextId + winCount) ]
-                        |> Seq.toList
+                            countCards newCards 0
 
-                    let subCount = countCards newCards 0
+                    countCache.Add(nextId, subCount')
+                    
+                    subCount'
 
-                    countCache.Add(nextId, subCount)
-
-                    countCards (tail) (count + subCount + 1)
+            countCards (tail) (count + subCount + 1)
         | [] -> count
 
     let initProcess =
