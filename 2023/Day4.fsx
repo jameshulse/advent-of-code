@@ -5,6 +5,7 @@
 open System
 open Advent
 open FSharp.Text.RegexProvider
+open System.Collections.Generic
 
 let sample =
     """
@@ -71,6 +72,8 @@ let part2 data =
         |> Array.map (fun card -> card.Id, countWinners card)
         |> dict
 
+    let countCache = new Dictionary<int, int>()
+
     let rec countCards toProcess count =
         match toProcess with
         | nextId :: tail ->
@@ -80,7 +83,13 @@ let part2 data =
                 [ nextId + 1 .. (nextId + winCount) ]
                 |> Seq.toList
 
-            countCards (tail @ newCards) (count + 1)
+            let subCount = countCards (tail @ newCards) (count + 1)
+            
+            // countCache.Add(nextId, subCount)
+
+            printfn $"Card: {nextId}, Win Count: {winCount}, Sub Count: {subCount}"
+            
+            subCount
         | [] -> count
 
     let initProcess =
@@ -88,7 +97,7 @@ let part2 data =
         |> Array.map (fun card -> card.Id)
         |> Array.toList
 
-    countCards initProcess 0
+    countCards [ 3 ] 0
 
 part2 sample // 30?
 part2 input // ?
