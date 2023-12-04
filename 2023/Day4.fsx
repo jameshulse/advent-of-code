@@ -77,17 +77,13 @@ let part2 data =
     let rec countCards toProcess count =
         match toProcess with
         | nextId :: tail ->
-            // printfn $"Card: {nextId}"
-
             match countCache.TryGetValue(nextId) with
-            | true, subCount ->
-                printfn $"Card: {nextId}, Cached sub count: {subCount}"
-                count + subCount
+            | true, subCount -> countCards (tail) (count + subCount + 1)
             | _ ->
                 let winCount = winningCounts[nextId]
 
                 if winCount = 0 then
-                    printfn $"Card: {nextId}, Win Count: {winCount}, Sub Count: 1"
+                    countCache.Add(nextId, 0)
 
                     countCards tail (count + 1)
                 else
@@ -95,13 +91,11 @@ let part2 data =
                         [ nextId + 1 .. (nextId + winCount) ]
                         |> Seq.toList
 
-                    let subCount = countCards newCards (winCount + 1)
+                    let subCount = countCards newCards 0
 
                     countCache.Add(nextId, subCount)
 
-                    printfn $"Card: {nextId}, Win Count: {winCount}, Sub Count: {subCount}"
-
-                    countCards tail (count + subCount)
+                    countCards (tail) (count + subCount + 1)
         | [] -> count
 
     let initProcess =
@@ -109,7 +103,7 @@ let part2 data =
         |> Array.map (fun card -> card.Id)
         |> Array.toList
 
-    countCards [ 1 ] 0
+    countCards initProcess 0
 
 part2 sample // 30?
 part2 input // ?
