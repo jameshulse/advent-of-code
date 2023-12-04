@@ -18,17 +18,25 @@ let getInput year day =
     |> Request.send
     |> toText
 
-let splitByLine (data: string) =
-    data.Split("\n", StringSplitOptions.RemoveEmptyEntries)
+let split (on: string) (str: string) =
+    str.Split(
+        on,
+        StringSplitOptions.RemoveEmptyEntries
+        ||| StringSplitOptions.TrimEntries
+    )
 
-let splitByEmptyLines (data: string) =
-    data.Split("\n\n", StringSplitOptions.RemoveEmptyEntries)
+let splitByLine (data: string) = split "\n" data
+
+let splitByEmptyLines (data: string) = split "\n\n" data
+
+let splitSpaces (data: string) = split " " data
 
 let bench func =
     let sw = Stopwatch.StartNew()
     let result = func ()
     sw.Stop()
     (result, sw.Elapsed)
+
 
 (* Extension methods *)
 module Array =
