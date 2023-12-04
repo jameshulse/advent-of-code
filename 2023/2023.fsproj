@@ -7,6 +7,9 @@
   <ItemGroup>
     <Compile Include="Advent.fs" />
     <Compile Include="Day1.fsx" />
+    <Compile Include="Day2.fsx" />
+    <Compile Include="Day3.fsx" />
+    <Compile Include="Day4.fsx" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FSharp.Text.RegexProvider" Version="2.1.0" />
