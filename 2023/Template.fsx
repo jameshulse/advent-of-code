@@ -1,17 +1,19 @@
 ﻿#r "nuget: FsHttp"
+#r "nuget: FSharpPlus"
 #r "nuget: FSharp.Text.RegexProvider"
 #load "Advent.fs"
 
 open System
 open Advent
 open FSharp.Text.RegexProvider
+open FSharpPlus
 
 let sample =
     """
 ...
 """
 
-let input = getInput 2023 1
+let input = getInput 2023 6
 
 let part1 data = ()
 
