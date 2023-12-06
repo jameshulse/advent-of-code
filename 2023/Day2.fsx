@@ -68,8 +68,7 @@ let part1 data =
     splitByLine data
     |> Seq.map parseGame
     |> Seq.filter meetsElfThreshold
-    |> Seq.map (fun (game) -> game.Id)
-    |> Seq.sum
+    |> Seq.sumBy _.Id
 
 part1 sample // 8
 part1 input // 2727

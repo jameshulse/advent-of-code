@@ -3,11 +3,8 @@
 #r "nuget: FSharpx.Extras"
 #load "Advent.fs"
 
-open FSharpx
-open System
 open Advent
 open FSharp.Text.RegexProvider
-open System.Collections.Generic
 
 let sample =
     """

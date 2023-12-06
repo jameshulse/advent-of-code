@@ -7,6 +7,8 @@ open System
 open Advent
 open FSharpPlus
 open FSharp.Text.RegexProvider
+open System.Collections.Generic
+
 
 let sample =
     """
@@ -47,73 +49,48 @@ humidity-to-location map:
 
 let input = getInput 2023 5
 
-// type Number =
-//     | Seed of uint
-//     | Soil of uint
-//     | Fertilizer of uint
-//     | Water of uint
-//     | Light of uint
-//     | Temperature of uint
-//     | Humidity of uint
-//     | Location of uint
-
-// type Number = Value of uint<'a>
-
-// type Seed = Seed of uint
-// type Soil = Soil of uint
-// type Fertilizer = Fertilizer of uint
-// type Water = Water of uint
-// type Light = Light of uint
-// type Temperature = Temperature of uint
-// type Humidity = Humidity of uint
-// type Location = Location of uint
-
-// [<Measure>]
-// type seed
-
-// [<Measure>]
-// type soil
-
-// [<Measure>]
-// type fertilizer
-
-// [<Measure>]
-// type water
-
-// [<Measure>]
-// type light
-
-// [<Measure>]
-// type temperature
-
-// [<Measure>]
-// type humidity
-
-// [<Measure>]
-// type location
-
-// type MappingType =
-//     | SeedToSoil
-//     | SoilToFertilizer
-//     | FertilizerToWater
-//     | WaterToLight
-//     | LightToTemperature
-//     | TempoeratureToHumidity
-//     | HumidityToLocation
-
 type Range =
     { Start: uint
       Size: uint }
-    member this.Contains n =
-        this.Start <= n && n <= this.Start + this.Size
 
-({ Start = 98u; Size = 2u }).Contains(99u)
-({ Start = 98u; Size = 2u }).Contains(25u)
+    member this.End = this.Start + this.Size
+
+    member this.Contains n = this.Start <= n && n <= this.End
+
+    member this.Intersects (range: Range) =
+        match range with
+        | _ when range.Contains(this.Start) -> true
+        | _ when range.Contains(this.End) -> true
+        | _ -> false
+
+    member this.SpliceInto (range: Range) =
+        match range with
+        | _ when
+            range.Contains(this.Start)
+            && range.Contains(this.End)
+            ->
+            Some([| this |])
+        | _ when range.Contains(this.Start) ->
+            Some(
+                [| { Start = this.Start
+                     Size = range.End - this.Start }
+                   { Start = range.End
+                     Size = this.End - range.End } |]
+            )
+        | _ when range.Contains(this.End) ->
+            Some(
+                [| { Start = this.Start
+                     Size = this.End - range.Start }
+                   { Start = range.Start
+                     Size = range.End - this.End } |]
+            )
+        | _ -> Some([| range |])
 
 module Mapping =
     type T =
         { From: Range
           To: Range }
+
         member this.Convert from =
             match from with
             | n when this.From.Contains(n) -> n - this.From.Start + this.To.Start
@@ -123,37 +100,33 @@ module Mapping =
         { From = { Start = fromStart; Size = size }
           To = { Start = toStart; Size = size } }
 
-(Mapping.create 98u 50u 2u).Convert(99u)
-(Mapping.create 0u 39u 15u).Convert(14u)
-
-let convertThroughSection mappings value =
-    let validMapping =
-        mappings
-        |> Array.filter (fun (m: Mapping.T) -> m.From.Contains(value))
-        |> Array.tryHead
-
-    match validMapping with
-    | Some (m) -> m.Convert(value)
-    | None -> value
-
 let parseSections rawSections =
     let parseSection section =
         splitByLine section
-        |> Array.skip (1) (* Skip the name *)
-        |> Array.map (fun line -> line.Split(" ") |> Array.map uint)
+        |> Array.skip (1) (* Skip the name line *)
+        |> Array.map (fun line -> line |> splitSpaces |> Array.map uint)
         |> Array.map (fun parts -> Mapping.create parts[1] parts[0] parts[2])
 
     rawSections |> Array.map parseSection
-
 
 let part1 data =
     let rawSections = splitByEmptyLines data
 
     let seeds =
-        rawSections[ 0 ].Replace("seeds: ", "").Split(" ")
+        rawSections[0]
+        |> replace "seeds: " ""
+        |> splitSpaces
         |> Array.map uint
 
     let mappingsBySection = parseSections rawSections[1..]
+
+    let convertThroughSection mappings value =
+        let validMapping =
+            mappings |> tryFind (fun (m: Mapping.T) -> m.From.Contains(value))
+
+        match validMapping with
+        | Some (m) -> m.Convert(value)
+        | None -> value
 
     seeds
     |> Array.map (fun seed ->
@@ -164,7 +137,36 @@ let part1 data =
 part1 sample // 35
 part1 input // 825516882
 
-let part2 data = ()
+let part2 data =
+    let rawSections = splitByEmptyLines data
+
+    let seeds =
+        rawSections[0]
+        |> replace "seeds: " ""
+        |> splitSpaces
+        |> Array.chunkBySize 2
+        |> Array.map (fun s -> { Start = uint s[0]; Size = uint s[1] })
+
+    let mappingsBySection = parseSections rawSections[1..]
+
+    for seed in seeds do
+        let ranges = new List<Range>()
+
+        ranges.Add(seed)
+
+        for section in mappingsBySection do
+            for range in ranges do
+                let mapping =
+                    section
+                    |> tryFind (fun m -> m.From.Intersects (range))
+
+                match mapping when
+                | Some(m) -> ()
+                | None -> 
+
+            ()
+
+    ()
 
 part2 sample
 part2 input

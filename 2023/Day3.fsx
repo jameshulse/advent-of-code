@@ -68,7 +68,7 @@ let part1 data =
 
     symbols
     |> Seq.collect (fun symbol -> adjacentPartFinder symbol)
-    |> Seq.sumBy (fun part -> part.Value)
+    |> Seq.sumBy _.Value
 
 part1 sample // 4361
 part1 input // 554003
