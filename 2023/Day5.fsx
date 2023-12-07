@@ -57,13 +57,13 @@ type Range =
 
     member this.Contains n = this.Start <= n && n <= this.End
 
-    member this.Intersects (range: Range) =
+    member this.Intersects(range: Range) =
         match range with
         | _ when range.Contains(this.Start) -> true
         | _ when range.Contains(this.End) -> true
         | _ -> false
 
-    member this.SpliceInto (range: Range) =
+    member this.SpliceInto(range: Range) =
         match range with
         | _ when
             range.Contains(this.Start)
@@ -91,10 +91,12 @@ module Mapping =
         { From: Range
           To: Range }
 
-        member this.Convert from =
+        member this.ConvertValue from =
             match from with
             | n when this.From.Contains(n) -> n - this.From.Start + this.To.Start
             | n -> n
+
+    // member this.ConvertRange
 
     let create fromStart toStart size =
         { From = { Start = fromStart; Size = size }
@@ -122,10 +124,11 @@ let part1 data =
 
     let convertThroughSection mappings value =
         let validMapping =
-            mappings |> tryFind (fun (m: Mapping.T) -> m.From.Contains(value))
+            mappings
+            |> tryFind (fun (m: Mapping.T) -> m.From.Contains(value))
 
         match validMapping with
-        | Some (m) -> m.Convert(value)
+        | Some (m) -> m.ConvertValue(value)
         | None -> value
 
     seeds
@@ -155,14 +158,16 @@ let part2 data =
         ranges.Add(seed)
 
         for section in mappingsBySection do
+            let newRanges = new List<Range>()
+
             for range in ranges do
                 let mapping =
                     section
-                    |> tryFind (fun m -> m.From.Intersects (range))
+                    |> tryFind (fun m -> m.From.Intersects(range))
 
-                match mapping when
-                | Some(m) -> ()
-                | None -> 
+                match mapping with
+                | Some (m) -> ()
+                | None -> newRanges.Add(range)
 
             ()
 
