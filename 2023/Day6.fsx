@@ -3,10 +3,8 @@
 #r "nuget: FSharp.Text.RegexProvider"
 #load "Advent.fs"
 
-open System
 open Advent
 open FSharpPlus
-open FSharp.Text.RegexProvider
 
 let sample =
     """

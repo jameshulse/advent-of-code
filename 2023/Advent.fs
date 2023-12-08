@@ -52,3 +52,9 @@ module Seq =
         arr
         |> Seq.mapi (fun i next -> (i, next))
         |> Seq.collect (fun (i, next) -> collector i next)
+
+    let repeat items =
+        seq {
+            while true do
+                yield! items
+        }
