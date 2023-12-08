@@ -90,39 +90,32 @@ let part2 data =
     let instructions = parts[0] |> Seq.repeat
     let allNodes = parseNodes parts[1]
 
-    let mutable currentNodes =
+    let startNodes =
         allNodes.Keys
         |> Seq.filter (fun n -> (String.endsWith "A" n))
         |> Seq.toArray
 
-    let mutable steps = 0
+    let countStepsToFinish node =
+        let mutable steps = 0
+        let mutable currentNode = node
 
-    let isComplete nodes =
-        Array.TrueForAll(nodes, (fun n -> (String.endsWith "Z" n)))
-    
-    while not(isComplete(currentNodes)) do
-        let nextInstruction = instructions |> Seq.skip steps |> Seq.head
+        while not (String.endsWith "Z" currentNode) do
+            let nextInstruction = instructions |> Seq.skip steps |> Seq.head
 
-    instructions
-    |> Seq.takeWhile (fun instruction ->
-        let nextNodes =
-            currentNodes
-            |> Array.map (fun n ->
-                match instruction with
-                | 'L' -> fst allNodes[n]
-                | 'R' -> snd allNodes[n]
-                | _ -> failwith "Invalid instruction")
+            let nextNode =
+                match nextInstruction with
+                | 'L' -> fst allNodes[currentNode]
+                | 'R' -> snd allNodes[currentNode]
+                | _ -> failwith "Invalid instruction"
 
-        currentNodes <- nextNodes
-        steps <- steps + 1
+            currentNode <- nextNode
+            steps <- steps + 1
 
-        printfn $"%s{debug}"
+        steps
 
-        not())
-    |> Seq.toList
-    |> ignore
+    startNodes |> Array.map countStepsToFinish
 
-    steps
+// From here find the "least common multiple" of each path...
 
-part2 sample3
-part2 input
+part2 sample3 // 2
+part2 input // 15746133679061
