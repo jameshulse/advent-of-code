@@ -85,6 +85,18 @@ LR
 XXX = (XXX, XXX)
 """
 
+// See: https://jeremybytes.blogspot.com/2016/07/getting-prime-factors-in-f-with-good.html
+let findPrimeFactors n =
+    let rec getFactor num proposed acc =
+        if proposed = num then
+            proposed :: acc
+        elif num % proposed = 0UL then
+            getFactor (num / proposed) proposed (proposed :: acc)
+        else
+            getFactor num (proposed + 1UL) acc
+
+    getFactor n 2UL [] |> List.toArray
+
 let part2 data =
     let parts = data |> splitByEmptyLines
     let instructions = parts[0] |> Seq.repeat
@@ -113,9 +125,14 @@ let part2 data =
 
         steps
 
-    startNodes |> Array.map countStepsToFinish
-
-// From here find the "least common multiple" of each path...
+    // Find "lowest common multiple" for the step count per starting point
+    // See: https://www.wolframalpha.com/input?i=lcm%2817873%2C+19631%2C+17287%2C+12599%2C+21389%2C+20803%29
+    startNodes
+    |> Array.Parallel.map countStepsToFinish
+    |> Array.Parallel.map uint64
+    |> Array.Parallel.collect findPrimeFactors
+    |> Array.distinct
+    |> Array.fold (*) 1UL
 
 part2 sample3 // 2
-part2 input // 15746133679061
+bench (fun () -> part2 input) // 15746133679061 (~6.6s benchmark single threaded, ~1.5 parallelised)
