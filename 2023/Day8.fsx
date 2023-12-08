@@ -3,10 +3,10 @@
 #r "nuget: FSharp.Text.RegexProvider"
 #load "Advent.fs"
 
-open System
 open Advent
 open FSharp.Text.RegexProvider
 open FSharpPlus
+open System.Collections.Generic
 
 let sample1 =
     """
@@ -44,15 +44,11 @@ let parseNodes nodeList =
         name, (node.Left.Value, node.Right.Value))
     |> dict
 
-let part1 data =
-    let parts = data |> splitByEmptyLines
-    let instructions = parts[0] |> Seq.repeat
-    let allNodes = parseNodes parts[1]
-
+let countStepsToFinish endNode (allNodes: IDictionary<string, string * string>) instructions node =
     let mutable steps = 0
-    let mutable currentNode = "AAA"
+    let mutable currentNode = node
 
-    while currentNode <> "ZZZ" do
+    while not (String.endsWith endNode currentNode) do
         let nextInstruction = instructions |> Seq.skip steps |> Seq.head
 
         let nextNode =
@@ -67,9 +63,16 @@ let part1 data =
 
     steps
 
+let part1 data =
+    let parts = data |> splitByEmptyLines
+    let instructions = parts[0] |> Seq.repeat
+    let allNodes = parseNodes parts[1]
+
+    countStepsToFinish "ZZZ" allNodes instructions "AAA"
+
 part1 sample1 // 2
 part1 sample2 // 6
-part1 input
+part1 input // 17873
 
 let sample3 =
     """
@@ -102,37 +105,19 @@ let part2 data =
     let instructions = parts[0] |> Seq.repeat
     let allNodes = parseNodes parts[1]
 
-    let startNodes =
+    let startingNodes =
         allNodes.Keys
         |> Seq.filter (fun n -> (String.endsWith "A" n))
         |> Seq.toArray
 
-    let countStepsToFinish node =
-        let mutable steps = 0
-        let mutable currentNode = node
-
-        while not (String.endsWith "Z" currentNode) do
-            let nextInstruction = instructions |> Seq.skip steps |> Seq.head
-
-            let nextNode =
-                match nextInstruction with
-                | 'L' -> fst allNodes[currentNode]
-                | 'R' -> snd allNodes[currentNode]
-                | _ -> failwith "Invalid instruction"
-
-            currentNode <- nextNode
-            steps <- steps + 1
-
-        steps
-
     // Find "lowest common multiple" for the step count per starting point
     // See: https://www.wolframalpha.com/input?i=lcm%2817873%2C+19631%2C+17287%2C+12599%2C+21389%2C+20803%29
-    startNodes
-    |> Array.Parallel.map countStepsToFinish
+    startingNodes
+    |> Array.Parallel.map (fun n -> countStepsToFinish "Z" allNodes instructions n)
     |> Array.Parallel.map uint64
     |> Array.Parallel.collect findPrimeFactors
     |> Array.distinct
     |> Array.fold (*) 1UL
 
-part2 sample3 // 2
+part2 sample3 // 6
 bench (fun () -> part2 input) // 15746133679061 (~6.6s benchmark single threaded, ~1.5 parallelised)
