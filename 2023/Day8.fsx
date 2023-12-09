@@ -65,7 +65,7 @@ let countStepsToFinish endNode (allNodes: IDictionary<string, string * string>) 
 
 let part1 data =
     let parts = data |> splitByEmptyLines
-    let instructions = parts[0] |> Seq.repeat
+    let instructions = parts[0] |> Seq.cycle
     let allNodes = parseNodes parts[1]
 
     countStepsToFinish "ZZZ" allNodes instructions "AAA"
@@ -88,21 +88,9 @@ LR
 XXX = (XXX, XXX)
 """
 
-// See: https://jeremybytes.blogspot.com/2016/07/getting-prime-factors-in-f-with-good.html
-let findPrimeFactors n =
-    let rec getFactor num proposed acc =
-        if proposed = num then
-            proposed :: acc
-        elif num % proposed = 0UL then
-            getFactor (num / proposed) proposed (proposed :: acc)
-        else
-            getFactor num (proposed + 1UL) acc
-
-    getFactor n 2UL [] |> List.toArray
-
 let part2 data =
     let parts = data |> splitByEmptyLines
-    let instructions = parts[0] |> Seq.repeat
+    let instructions = parts[0] |> Seq.cycle
     let allNodes = parseNodes parts[1]
 
     let startingNodes =
@@ -115,9 +103,7 @@ let part2 data =
     startingNodes
     |> Array.map (fun n -> countStepsToFinish "Z" allNodes instructions n)
     |> Array.map uint64
-    |> Array.collect findPrimeFactors
-    |> Array.distinct
-    |> Array.fold (*) 1UL
+    |> Math.lcm
 
 part2 sample3 // 6
 bench (fun () -> part2 input) // 15746133679061

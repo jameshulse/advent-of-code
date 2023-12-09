@@ -53,8 +53,28 @@ module Seq =
         |> Seq.mapi (fun i next -> (i, next))
         |> Seq.collect (fun (i, next) -> collector i next)
 
-    let repeat items =
+    let cycle items =
         seq {
             while true do
                 yield! items
         }
+
+module Math =
+    // See: https://jeremybytes.blogspot.com/2016/07/getting-prime-factors-in-f-with-good.html
+    let primeFactors n =
+        let rec getFactor num proposed acc =
+            if proposed = num then
+                proposed :: acc
+            elif num % proposed = LanguagePrimitives.GenericZero then
+                getFactor (num / proposed) proposed (proposed :: acc)
+            else
+                getFactor num (proposed + 1UL) acc
+
+        getFactor n 2UL [] |> List.toArray
+
+    (* Find the lowest common multiple of a set of numbers *)
+    let lcm nums =
+        nums
+        |> Seq.collect primeFactors
+        |> Seq.distinct
+        |> Seq.fold (*) LanguagePrimitives.GenericOne
