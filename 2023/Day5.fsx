@@ -57,34 +57,26 @@ type Range =
 
     member this.Contains n = this.Start <= n && n <= this.End
 
-    member this.Intersects(range: Range) =
-        match range with
-        | _ when range.Contains(this.Start) -> true
-        | _ when range.Contains(this.End) -> true
-        | _ -> false
+// member this.Intersects(range: Range) =
+//     match range with
+//     | _ when range.Contains(this.Start) -> true
+//     | _ when range.Contains(this.End) -> true
+//     | _ -> false
 
-    member this.SpliceInto(range: Range) =
-        match range with
-        | _ when
-            range.Contains(this.Start)
-            && range.Contains(this.End)
-            ->
-            Some([| this |])
-        | _ when range.Contains(this.Start) ->
-            Some(
-                [| { Start = this.Start
-                     Size = range.End - this.Start }
-                   { Start = range.End
-                     Size = this.End - range.End } |]
-            )
-        | _ when range.Contains(this.End) ->
-            Some(
-                [| { Start = this.Start
-                     Size = this.End - range.Start }
-                   { Start = range.Start
-                     Size = range.End - this.End } |]
-            )
-        | _ -> Some([| range |])
+// member this.SpliceInto(range: Range) =
+//     if range.Contains(this.Start) && range.Contains(this.End) then
+//         [| this |]
+//     elif range.Contains(this.Start) then
+//         [| { Start = this.Start
+//              Size = range.End - this.Start }
+//            { Start = range.End
+//              Size = this.End - range.End } |]
+//     elif range.Contains(this.End) then
+//         [| { Start = this.Start
+//              Size = this.End - range.Start }
+//            { Start = range.Start
+//              Size = range.End - this.End } |]
+//     else [| range |]
 
 module Mapping =
     type T =
@@ -96,7 +88,14 @@ module Mapping =
             | n when this.From.Contains(n) -> n - this.From.Start + this.To.Start
             | n -> n
 
-    // member this.ConvertRange
+    // member this.ConvertRange(range: Range) =
+    //     let mapRange (r: Range) =
+    //         if this.From.Contains(r) then
+    //             r.S
+
+    //     range.SpliceInto(this.From)
+    //     |> Seq.map (fun r -> this.ConvertRange r)
+    //     |> Seq.toArray
 
     let create fromStart toStart size =
         { From = { Start = fromStart; Size = size }
@@ -143,7 +142,7 @@ part1 input // 825516882
 let part2 data =
     let rawSections = splitByEmptyLines data
 
-    let seeds =
+    let seedRange =
         rawSections[0]
         |> replace "seeds: " ""
         |> splitSpaces
@@ -152,26 +151,21 @@ let part2 data =
 
     let mappingsBySection = parseSections rawSections[1..]
 
-    for seed in seeds do
-        let ranges = new List<Range>()
+    let convertThroughSection mappings value =
+        let validMapping =
+            mappings
+            |> tryFind (fun (m: Mapping.T) -> m.From.Contains(value))
 
-        ranges.Add(seed)
+        match validMapping with
+        | Some (m) -> m.ConvertValue(value)
+        | None -> value
 
-        for section in mappingsBySection do
-            let newRanges = new List<Range>()
+    seedRange
+    |> Array.collect (fun r -> [| r.Start .. r.End |])
+    |> Array.Parallel.map (fun seed ->
+        mappingsBySection
+        |> Array.fold (fun v section -> convertThroughSection section v) seed)
+    |> Array.min
 
-            for range in ranges do
-                let mapping =
-                    section
-                    |> tryFind (fun m -> m.From.Intersects(range))
-
-                match mapping with
-                | Some (m) -> ()
-                | None -> newRanges.Add(range)
-
-            ()
-
-    ()
-
-part2 sample
-part2 input
+part2 sample // 46
+bench (fun () -> part2 input) // 136096660

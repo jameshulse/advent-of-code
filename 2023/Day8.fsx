@@ -72,7 +72,7 @@ let part1 data =
 
 part1 sample1 // 2
 part1 sample2 // 6
-part1 input // 17873
+part1 input // 1787
 
 let sample3 =
     """
