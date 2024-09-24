@@ -37,7 +37,6 @@ let bench func =
     sw.Stop()
     (result, sw.Elapsed)
 
-
 (* Extension methods *)
 module Array =
     (* Like mapi, it passes the index to each iteration being collected *)
