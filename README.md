@@ -11,3 +11,4 @@ to try a new language.
     2020 - Ruby
     2019 - Elixir
     2018 - Go/Python
+    2017 - Typescript
