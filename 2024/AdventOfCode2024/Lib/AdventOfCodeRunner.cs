@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace AdventOfCode2024.Lib;
 
-public class AdventOfCode
+public static class AdventOfCodeRunner
 {
     public static void Run<T>()
         where T : IAdventDay, new()
