@@ -31,7 +31,7 @@ public static class AdventOfCodeRunner
             var sw = Stopwatch.StartNew();
             
             Console.WriteLine($"    Solution:    {run()}");
-            Console.WriteLine($"    Time taken:  {sw.ElapsedMilliseconds} ms");
+            Console.WriteLine($"    Time taken:  {sw.Elapsed.TotalMilliseconds} ms");
         }
         catch (NotImplementedException)
         {

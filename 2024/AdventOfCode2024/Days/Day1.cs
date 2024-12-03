@@ -12,12 +12,15 @@ public class Day1 : IAdventDay
         
         left.Sort();
         right.Sort();
-        
-        var result = left
-            .Zip(right)
-            .Aggregate(0, (current, values) => current + Math.Abs(values.First - values.Second));
 
-        return result.ToString();
+        int total = 0;
+        
+        for (int i = 0; i < left.Count; i++)
+        {
+            total += Math.Abs(left[i] - right[i]);
+        }
+        
+        return total.ToString();
     }
 
     public string Part2(string input)
@@ -46,8 +49,10 @@ public class Day1 : IAdventDay
         
         foreach (var line in lines)
         {
-            left.Add(int.Parse(inputSpan[line][..numberWidth]));
-            right.Add(int.Parse(inputSpan[line][(numberWidth + 3)..])); // +3 to skip the space
+            left.Add(Number.FastParseInt(inputSpan[line][..numberWidth]));
+            right.Add(Number.FastParseInt(inputSpan[line][(numberWidth + 3)..])); // +3 to skip the space
+            // left.Add(int.Parse(inputSpan[line][..numberWidth]));
+            // right.Add(int.Parse(inputSpan[line][(numberWidth + 3)..])); // +3 to skip the space
         }
         
         return (left, right);
