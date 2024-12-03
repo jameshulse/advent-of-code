@@ -28,7 +28,9 @@ public class Day2 : IAdventDay
         
         foreach (var lineRange in lines)
         {
-            if (AnalyseReport(inputSpan[lineRange]) == ReportResult.Safe)
+            var line = inputSpan[lineRange];
+
+            if (AnalyseReport(line) == (ReportResult.Safe, null))
             {
                 safeCount++;
             }
@@ -37,53 +39,66 @@ public class Day2 : IAdventDay
         return safeCount.ToString();
     }
 
-    private ReportResult AnalyseReport(ReadOnlySpan<char> report, bool withDampener = false)
+    private (ReportResult result, int? failedIndex) AnalyseReport(ReadOnlySpan<char> report, int? ignoreIndex = null)
     {
         var values = report.Split(" ");
         var currentDirection = Direction.Unknown;
+        int currentIndex = 0;
         int? lastValue = null;
-        bool dampenerTriggered = !withDampener; // Consider the dampener triggered if there is no dampener
 
         foreach (var valueRange in values)
         {
             int currentValue = Number.FastParseInt(report[valueRange]);
 
-            if (lastValue is null)
+            if (lastValue is null && ignoreIndex != currentIndex)
             {
                 lastValue = currentValue;
+                currentIndex++;
                 continue; // Skip the first value
             }
 
-            int change = Math.Abs((int)(currentValue - lastValue));
-            var pendingResult = ReportResult.Safe;
-
-            if (change < 1 || change > 3)
+            if (currentIndex != ignoreIndex)
             {
-                pendingResult = ReportResult.Unsafe;
-            }
+                int change = Math.Abs((int)(currentValue - lastValue)!);
 
-            var nextDirection = currentValue > lastValue ? Direction.Ascending : Direction.Descending;
+                if (change < 1 || change > 3)
+                {
+                    return (ReportResult.Unsafe, currentIndex);
+                }
 
-            if (currentDirection == Direction.Unknown)
-            {
-                currentDirection = nextDirection;
-            }
-            else if (currentDirection != nextDirection)
-            {
-                pendingResult = ReportResult.Unsafe;
-            }
+                var nextDirection = currentValue > lastValue ? Direction.Ascending : Direction.Descending;
 
-            if (pendingResult == ReportResult.Unsafe && dampenerTriggered)
-            {
-                return pendingResult;
+                if (currentDirection == Direction.Unknown)
+                {
+                    currentDirection = nextDirection;
+                }
+                else if (currentDirection != nextDirection)
+                {
+                    return (ReportResult.Unsafe, currentIndex);
+                }
+                
+                lastValue = currentValue;
             }
-
-            lastValue = currentValue;
+            
+            currentIndex++;
         }
 
-        return ReportResult.Safe;
+        return (ReportResult.Safe, null);
     }
 
+    private ReportResult AnalyseReportWithDampening(ReadOnlySpan<char> report)
+    {
+        foreach (var ignoreIndex in new int?[] { null, 0, 1, 2, 3, 4, 5, 6, 7})
+        {
+            if (AnalyseReport(report, ignoreIndex) == (ReportResult.Safe, null))
+            {
+                return ReportResult.Safe;
+            }
+        }
+
+        return ReportResult.Unsafe;
+    }
+    
     public string Part2(string input)
     {
         var inputSpan = input.AsSpan();
@@ -93,7 +108,9 @@ public class Day2 : IAdventDay
         
         foreach (var lineRange in lines)
         {
-            if (AnalyseReport(inputSpan[lineRange], true) == ReportResult.Safe)
+            var line = inputSpan[lineRange];
+            
+            if (AnalyseReportWithDampening(line) == ReportResult.Safe)
             {
                 safeCount++;
             }

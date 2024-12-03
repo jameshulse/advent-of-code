@@ -21,4 +21,13 @@ public class Day2Tests
 
         Assert.Equal("2", result);
     }
+    
+    [Fact]
+    public void Part2_Sample_IsCorrect()
+    {
+        var day = new Day2();
+        var result = day.Part2(ExampleInput);
+
+        Assert.Equal("4", result);
+    }
 }
