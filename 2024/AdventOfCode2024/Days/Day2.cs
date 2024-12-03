@@ -1,5 +1,3 @@
-using System.Collections.Frozen;
-using System.Collections.Immutable;
 using AdventOfCode2024.Lib;
 
 namespace AdventOfCode2024.Days;
@@ -88,8 +86,22 @@ public class Day2 : IAdventDay
 
     private ReportResult AnalyseReportWithDampening(ReadOnlySpan<char> report)
     {
-        foreach (var ignoreIndex in new int?[] { null, 0, 1, 2, 3, 4, 5, 6, 7})
+        var (result, failedIndex) = AnalyseReport(report);
+
+        if (result == ReportResult.Safe)
         {
+            return ReportResult.Safe;
+        }
+
+        var ignoreIndexes = new int[] { (int)(failedIndex - 1)!, (int)failedIndex!, (int)(failedIndex + 1) };
+        
+        foreach (var ignoreIndex in ignoreIndexes)
+        {
+            if (ignoreIndex < 0 || ignoreIndex > 7)
+            {
+                continue;
+            }
+            
             if (AnalyseReport(report, ignoreIndex) == (ReportResult.Safe, null))
             {
                 return ReportResult.Safe;
